@@ -12,6 +12,8 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-title" content="MyWebSite" />
   <link rel="manifest" href="/site.webmanifest" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8864017003306664"
+     crossorigin="anonymous"></script>
   <style>
 /* ==========================================================================
    Periodic Forge: Compound Craft - Dual-Bar & Adaptive Layout Engine
@@ -234,9 +236,7 @@ html, body {
    Small Bottom Ad Strip (Zero Cumulative Layout Shift - 50px Height)
    ========================================================================== */
 .bottom-ad-strip {
-  height: 50px;
   min-height: 50px;
-  max-height: 50px;
   width: 100%;
   background: var(--bg-card);
   border-top: 1px solid var(--border-subtle);
@@ -246,7 +246,7 @@ html, body {
   flex-shrink: 0;
   z-index: 40;
   box-sizing: border-box;
-  padding: 0 1rem;
+  padding: 0 0.5rem;
 }
 
 .ad-container {
@@ -255,24 +255,23 @@ html, body {
   justify-content: center;
   position: relative;
   box-sizing: border-box;
-  user-select: none;
-  contain: layout paint;
 }
 
 .ad-bottom-strip {
   width: 100%;
   max-width: 728px;
-  height: 42px;
-  min-height: 42px;
-  background-color: var(--bg-sidebar-elevated);
-  border: 1px dashed var(--border-subtle);
-  border-radius: 6px;
-  padding: 0 0.85rem;
+  min-height: 50px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.ad-bottom-strip ins.adsbygoogle {
+  display: block !important;
+  width: 100% !important;
+  min-height: 50px;
 }
 
 .ad-label {
@@ -2630,11 +2629,18 @@ body.is-mobile .viewer-canvas-shell canvas {
     <!-- Small Strip at the Bottom for Ads (Desktop & Mobile) -->
     <footer id="bottom-ad-strip" class="bottom-ad-strip" aria-label="Advertisement">
       <div class="ad-container ad-bottom-strip" id="ad-bottom-strip">
-        <span class="ad-label">Advertisement</span>
-        <div class="ad-placeholder-content">
-          <span class="ad-dim-badge">Banner Ad</span>
-          <span class="ad-sponsor-text">Sponsor &bull; Advanced Chemical Modeling Tools</span>
-        </div>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8864017003306664"
+             crossorigin="anonymous"></script>
+        <!-- periodicforge-footer-banner -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-8864017003306664"
+             data-ad-slot="6652632629"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
       </div>
     </footer>
 
