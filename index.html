@@ -12,8 +12,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-title" content="MyWebSite" />
   <link rel="manifest" href="/site.webmanifest" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8864017003306664"
-     crossorigin="anonymous"></script>
   <style>
 /* ==========================================================================
    Periodic Forge: Compound Craft - Dual-Bar & Adaptive Layout Engine
@@ -221,6 +219,876 @@ html, body {
   color: var(--text-primary);
 }
 
+/* ==========================================================================
+   Dual-Mode Workspace Mode Switcher (Header Segmented Control)
+   ========================================================================== */
+.workspace-mode-switch {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-sidebar-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  padding: 2px;
+  gap: 2px;
+  user-select: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin: 0 0.5rem;
+}
+
+.mode-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.mode-switch-btn:hover {
+  color: var(--text-primary);
+}
+
+.mode-switch-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+}
+
+[data-theme="dark"] .mode-switch-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.mode-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.mode-text-full {
+  display: inline;
+}
+
+.mode-text-short {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .mode-text-full {
+    display: none !important;
+  }
+  .mode-text-short {
+    display: inline !important;
+  }
+}
+
+/* ==========================================================================
+   3D Atomic Builder Viewport & Immersive WebGL Canvas
+   ========================================================================== */
+.atomic-builder-viewport {
+  order: 2;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-canvas);
+  background-image: radial-gradient(circle, var(--bg-grid-dot) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+#atomic-builder-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  touch-action: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* 3D Atomic Builder Top Glass Toolbar */
+.atomic-builder-toolbar {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 247, 250, 0.65) 100%);
+  backdrop-filter: blur(18px) saturate(190%);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 18px;
+  padding: 0.45rem 0.85rem;
+  box-shadow: 
+    0 10px 30px -4px rgba(0, 0, 0, 0.08),
+    0 4px 12px -2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95);
+  z-index: 50;
+  user-select: none;
+  max-width: 96vw;
+  box-sizing: border-box;
+}
+
+[data-theme="dark"] .atomic-builder-toolbar {
+  background: linear-gradient(135deg, rgba(30, 30, 38, 0.85) 0%, rgba(18, 18, 24, 0.65) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 
+    0 14px 40px -4px rgba(0, 0, 0, 0.55),
+    0 4px 16px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.2);
+}
+
+.atomic-toolbar-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.atomic-toolbar-top-row::-webkit-scrollbar { display: none; }
+
+.atomic-category-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: nowrap;
+}
+
+.atomic-cat-tab {
+  font-size: 0.70rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.atomic-cat-tab:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-cyan);
+}
+
+.atomic-cat-tab.active {
+  background: var(--accent-cyan);
+  color: #ffffff;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+}
+
+.atomic-cat-tab.highlight {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  border-color: rgba(245, 158, 11, 0.5);
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+.atomic-cat-tab.highlight:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45);
+}
+
+.atomic-toolbar-main-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.atomic-toolbar-main-row::-webkit-scrollbar { display: none; }
+
+.atomic-spawn-palette {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.palette-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.atomic-spawn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.22rem 0.55rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  white-space: nowrap;
+}
+
+.atomic-spawn-chip:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-cyan);
+}
+
+.atomic-spawn-chip:active {
+  transform: translateY(0);
+}
+
+.atom-val {
+  font-size: 0.60rem;
+  font-weight: 800;
+  opacity: 0.7;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0.05rem 0.25rem;
+  border-radius: 4px;
+}
+[data-theme="dark"] .atom-val {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.mode-atomic-builder .mobile-inventory-drawer {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  body.mode-atomic-builder .atomic-inspector-panel {
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    left: 8px !important;
+    right: 8px !important;
+    transform: none !important;
+    width: auto !important;
+  }
+}
+
+/* CPK Glowing Atom Swatches */
+.atom-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 5px currentColor;
+}
+
+.atom-dot-c { background: #2A2A2A; color: #555555; border: 1px solid #777; }
+.atom-dot-h { background: #FFFFFF; color: #FFFFFF; border: 1px solid #CCC; }
+.atom-dot-o { background: #FB7185; color: #FB7185; }
+.atom-dot-n { background: #2563EB; color: #2563EB; }
+.atom-dot-s { background: #EAB308; color: #EAB308; }
+.atom-dot-p { background: #EA580C; color: #EA580C; }
+.atom-dot-f { background: #22C55E; color: #22C55E; }
+.atom-dot-cl { background: #16A34A; color: #16A34A; }
+.atom-dot-br { background: #991B1B; color: #991B1B; }
+.atom-dot-i { background: #7C3AED; color: #7C3AED; }
+.atom-dot-na { background: #A855F7; color: #A855F7; }
+.atom-dot-fe { background: #B45309; color: #B45309; }
+.atom-dot-cu { background: #D97706; color: #D97706; }
+.atom-dot-default { background: #94A3B8; color: #94A3B8; }
+
+.atomic-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.atomic-tools-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.atomic-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.24rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.atomic-tool-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--text-secondary);
+}
+
+.atomic-tool-btn.secondary {
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-theme="dark"] .atomic-tool-btn.secondary {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.atomic-tool-btn.danger {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.06);
+}
+.atomic-tool-btn.danger:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+}
+
+.atomic-tool-btn.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 12px rgba(2, 132, 199, 0.55);
+}
+
+/* Floating On-Canvas Controls Dock (Permanently visible, never clipped) */
+.atomic-floating-controls {
+  position: absolute;
+  top: 78px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  z-index: 40;
+  user-select: none;
+}
+
+.floating-atomic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.85rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 247, 250, 0.7) 100%);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .floating-atomic-btn {
+  background: linear-gradient(135deg, rgba(30, 30, 38, 0.85) 0%, rgba(18, 18, 24, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.floating-atomic-btn:hover {
+  transform: translateY(-1.5px) scale(1.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border-color: var(--accent-cyan);
+}
+
+.floating-atomic-btn.danger {
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+.floating-atomic-btn.danger:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* Drag Hint Badge */
+.builder-drag-hint {
+  position: absolute;
+  top: 78px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(245, 247, 250, 0.6) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  pointer-events: none;
+  z-index: 35;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .builder-drag-hint {
+  background: linear-gradient(135deg, rgba(30, 30, 38, 0.8) 0%, rgba(18, 18, 24, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-inspector-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-inspector-clear:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+/* ==========================================================================
+   Full 118-Element Periodic Table Picker Modal
+   ========================================================================== */
+.periodic-picker-dialog {
+  max-width: 900px !important;
+  width: 94vw !important;
+  max-height: 86vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 1.25rem !important;
+  gap: 0.85rem !important;
+}
+
+.periodic-picker-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.periodic-picker-filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+.periodic-picker-filter-chips::-webkit-scrollbar { display: none; }
+
+.picker-filter-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.22rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.picker-filter-chip:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-cyan);
+}
+
+.picker-filter-chip.active {
+  background: var(--accent-cyan);
+  color: #ffffff;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+}
+
+.periodic-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 0.45rem;
+  overflow-y: auto;
+  max-height: 54vh;
+  padding: 0.35rem 0.2rem;
+  scrollbar-width: thin;
+}
+
+.periodic-grid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.periodic-grid-card:hover {
+  transform: translateY(-2px) scale(1.05);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+}
+
+.periodic-grid-card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.card-atomic-num {
+  font-size: 0.58rem;
+  font-weight: 800;
+  opacity: 0.6;
+  line-height: 1;
+  margin-bottom: 0.1rem;
+}
+
+.card-symbol {
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.card-name {
+  font-size: 0.60rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin-top: 0.1rem;
+}
+
+.card-val-pill {
+  font-size: 0.55rem;
+  font-weight: 800;
+  padding: 0.05rem 0.25rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+}
+[data-theme="dark"] .card-val-pill {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 3D Atomic Builder Bottom Inspector & Live Graph Dock */
+.atomic-inspector-panel {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 640px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(245, 247, 250, 0.72) 100%);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: 0.65rem 0.95rem;
+  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.12), 0 4px 16px -2px rgba(0, 0, 0, 0.05);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  user-select: none;
+}
+
+[data-theme="dark"] .atomic-inspector-panel {
+  background: linear-gradient(135deg, rgba(28, 28, 36, 0.88) 0%, rgba(18, 18, 24, 0.75) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 44px -4px rgba(0, 0, 0, 0.6);
+}
+
+.inspector-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.inspector-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.inspector-badge-title {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.inspector-counts-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+[data-theme="dark"] .inspector-counts-badge {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.inspector-match-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.35rem 0.6rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+}
+
+.match-formula-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.match-formula {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.match-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-muted);
+}
+[data-theme="dark"] .match-badge {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.match-badge.match-found {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.match-badge.match-new {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+}
+
+.match-badge.match-unregistered {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.match-name {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.inspector-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+  border: 1px solid var(--border-subtle);
+  border-radius: 9999px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.inspector-status-msg {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.inspector-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.inspector-forge-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--accent-cyan);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+.inspector-forge-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.inspector-forge-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.inspector-copy-json-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.inspector-copy-json-btn:hover {
+  border-color: var(--text-secondary);
+}
+
+/* Collapsible JSON Graph Drawer */
+.inspector-json-drawer {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 140px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .inspector-json-drawer {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.inspector-json-drawer.closed {
+  display: none;
+}
+
+.json-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.json-drawer-badge {
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  background: var(--accent-cyan);
+  color: #ffffff;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.inspector-json-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.68rem;
+  color: var(--text-primary);
+  background: transparent;
+  margin: 0;
+  overflow-y: auto;
+  max-height: 95px;
+  user-select: text;
+}
+
+/* Valency Limit Warning Toast */
+.builder-valency-alert {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.95rem;
+  border-radius: 9999px;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.builder-valency-alert.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* Mobile elements hidden on desktop */
 .mobile-menu-btn {
   display: none;
@@ -233,94 +1101,26 @@ html, body {
 }
 
 /* ==========================================================================
-   Small Bottom Ad Strip (Zero Cumulative Layout Shift - 50px Height)
+   Small Bottom Ad Strip - REMOVED (Zero wasted screen space)
    ========================================================================== */
 .bottom-ad-strip {
-  min-height: 50px;
-  width: 100%;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  z-index: 40;
-  box-sizing: border-box;
-  padding: 0 0.5rem;
+  display: none !important;
 }
 
-.ad-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  box-sizing: border-box;
-}
-
+.ad-container,
 .ad-bottom-strip {
-  width: 100%;
-  max-width: 728px;
-  min-height: 50px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-}
-
-.ad-bottom-strip ins.adsbygoogle {
-  display: block !important;
-  width: 100% !important;
-  min-height: 50px;
-}
-
-.ad-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  opacity: 0.85;
-  white-space: nowrap;
-}
-
-.ad-placeholder-content {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.ad-dim-badge {
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 0.12rem 0.45rem;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-
-[data-theme="dark"] .ad-dim-badge {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.ad-sponsor-text {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none !important;
 }
 
 /* ==========================================================================
-   Workspace Layout: Desktop 3-Column Dual-Sidebar + Center Canvas
-   [ Left: Elements Bar ] [ Center: Crafting Canvas ] [ Right: Compounds Bar ]
+   Workspace Layout: Desktop 3-Column Dual-Sidebar + Center Canvas / 3D Builder
+   [ Left: Elements Bar ] [ Center: Crafting Canvas / 3D Builder ] [ Right: Compounds Bar ]
    ========================================================================== */
 .app-main-layout,
 .workspace-layout {
   display: flex;
   flex: 1;
-  height: calc(100vh - var(--header-height) - 50px);
+  height: calc(100vh - var(--header-height));
   width: 100vw;
   position: relative;
   overflow: hidden;
@@ -1263,7 +2063,32 @@ html, body {
   }
 
   .brand-title {
-    font-size: 0.9rem !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap !important;
+  }
+
+  .header-stats {
+    display: none !important;
+  }
+
+  .workspace-mode-switch {
+    margin: 0 0.35rem !important;
+    padding: 1.5px !important;
+  }
+
+  .mode-switch-btn {
+    padding: 0.15rem 0.5rem !important;
+    font-size: 0.68rem !important;
+    gap: 0.25rem !important;
+  }
+
+  @media (max-width: 400px) {
+    .mode-switch-btn .mode-text {
+      font-size: 0.64rem !important;
+    }
+    .brand-title {
+      display: none !important;
+    }
   }
 
   .stat-pill,
@@ -1277,8 +2102,27 @@ html, body {
     display: block !important;
     position: relative !important;
     width: 100vw !important;
-    height: calc(100vh - 36px - 50px - env(safe-area-inset-bottom, 0px)) !important;
+    height: calc(100vh - 36px - env(safe-area-inset-bottom, 0px)) !important;
     overflow: hidden !important;
+  }
+
+  .atomic-builder-viewport {
+    width: 100vw !important;
+    height: 100% !important;
+  }
+
+  .atomic-builder-toolbar {
+    max-width: 96vw !important;
+    top: 6px !important;
+    padding: 0.25rem 0.5rem !important;
+    gap: 0.35rem !important;
+  }
+
+  .atomic-inspector-panel {
+    bottom: 12px !important;
+    left: 12px !important;
+    right: 12px !important;
+    max-width: calc(100vw - 24px) !important;
   }
 
   /* Hide Desktop sidebars */
@@ -1380,7 +2224,7 @@ html, body {
     position: fixed !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: env(safe-area-inset-bottom, 0px) !important;
     width: 100vw !important;
     height: min(74vh, 580px) !important;
     background: var(--bg-sidebar) !important;
@@ -1623,21 +2467,9 @@ html, body {
     opacity: 0.75 !important;
   }
 
-  /* Reserved Bottom Ad Strip with safe area padding */
+  /* Bottom Ad Strip - Removed */
   .bottom-ad-strip {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
-    min-height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
-    max-height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
-    width: 100% !important;
-    z-index: 100 !important;
-    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08) !important;
-    background: var(--bg-card) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-    box-sizing: border-box !important;
+    display: none !important;
   }
 }
 
@@ -1654,7 +2486,7 @@ body.is-mobile .workspace-layout {
   display: block !important;
   position: relative !important;
   width: 100vw !important;
-  height: calc(100vh - 36px - 50px - env(safe-area-inset-bottom, 0px)) !important;
+  height: calc(100vh - 36px - env(safe-area-inset-bottom, 0px)) !important;
   overflow: hidden !important;
 }
 
@@ -1678,22 +2510,11 @@ body.is-mobile .canvas-wrapper {
 
 body.is-mobile .mobile-inventory-drawer {
   display: flex !important;
-  bottom: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
+  bottom: env(safe-area-inset-bottom, 0px) !important;
 }
 
 body.is-mobile .bottom-ad-strip {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
-  min-height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
-  max-height: calc(50px + env(safe-area-inset-bottom, 0px)) !important;
-  width: 100% !important;
-  z-index: 100 !important;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.08) !important;
-  background: var(--bg-card) !important;
-  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  display: none !important;
 }
 
 /* ==========================================================================
@@ -2356,6 +3177,20 @@ body.is-mobile .viewer-canvas-shell canvas {
         </div>
       </div>
 
+      <!-- Toggleable Dual-Mode Workspace Toolbar -->
+      <div class="workspace-mode-switch" id="workspace-mode-switch" role="tablist" aria-label="Workspace View Mode">
+        <button id="mode-element-boxes-btn" class="mode-switch-btn active" role="tab" aria-selected="true" data-mode="element-boxes" title="Element Boxes: 2D Crafting Canvas &amp; Grid">
+          <span class="mode-icon">&#128451;&#65039;</span>
+          <span class="mode-text mode-text-full">Element Boxes</span>
+          <span class="mode-text mode-text-short">Boxes</span>
+        </button>
+        <button id="mode-atomic-builder-btn" class="mode-switch-btn" role="tab" aria-selected="false" data-mode="atomic-builder" title="3D Atomic Builder: Immersive 3D Atom Drag &amp; Bond Viewport">
+          <span class="mode-icon">&#9883;</span>
+          <span class="mode-text mode-text-full">3D Atomic Builder</span>
+          <span class="mode-text mode-text-short">3D Builder</span>
+        </button>
+      </div>
+
       <div class="nav-actions">
         <button id="theme-toggle-btn" class="nav-btn desktop-only" title="Toggle Theme (Light / Dark)" aria-label="Toggle Theme">
           &#127763;
@@ -2519,6 +3354,160 @@ body.is-mobile .viewer-canvas-shell canvas {
         </div>
       </section>
 
+      <!-- 3D Atomic Builder Viewport (Toggleable Mode) -->
+      <section id="atomic-builder-viewport" class="atomic-builder-viewport" style="display: none;" aria-label="3D Atomic Builder Viewport">
+        <canvas id="atomic-builder-canvas"></canvas>
+
+        <!-- Top Builder Toolbar: Category Tabs + Atom Spawner Palette + Mode Controls -->
+        <div class="atomic-builder-toolbar">
+          <div class="atomic-toolbar-top-row">
+            <div class="palette-label">SPAWN ATOM</div>
+            <div class="atomic-category-tabs" id="atomic-category-tabs">
+              <button class="atomic-cat-tab active" data-cat="organics">Organics</button>
+              <button class="atomic-cat-tab" data-cat="metals">Metals</button>
+              <button class="atomic-cat-tab" data-cat="halogens-noble">Noble &amp; Halogens</button>
+              <button class="atomic-cat-tab" data-cat="common">Common</button>
+              <button id="builder-open-all-btn" class="atomic-cat-tab highlight" title="Open complete 118-element periodic table picker">&#9883; All 118 Elements &blacktriangledown;</button>
+            </div>
+          </div>
+
+          <div class="atomic-toolbar-main-row">
+            <div class="atomic-spawn-palette" id="atomic-spawn-palette">
+              <!-- Dynamically populated / Default Organics -->
+              <button class="atomic-spawn-chip" data-symbol="H" title="Hydrogen (Valency 1)">
+                <span class="atom-dot atom-dot-h"></span>
+                <span class="atom-sym">H</span>
+                <span class="atom-val">1</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="C" title="Carbon (Valency 4)">
+                <span class="atom-dot atom-dot-c"></span>
+                <span class="atom-sym">C</span>
+                <span class="atom-val">4</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="N" title="Nitrogen (Valency 3)">
+                <span class="atom-dot atom-dot-n"></span>
+                <span class="atom-sym">N</span>
+                <span class="atom-val">3</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="O" title="Oxygen (Valency 2)">
+                <span class="atom-dot atom-dot-o"></span>
+                <span class="atom-sym">O</span>
+                <span class="atom-val">2</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="P" title="Phosphorus (Valency 5)">
+                <span class="atom-dot atom-dot-p"></span>
+                <span class="atom-sym">P</span>
+                <span class="atom-val">5</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="S" title="Sulfur (Valency 6)">
+                <span class="atom-dot atom-dot-s"></span>
+                <span class="atom-sym">S</span>
+                <span class="atom-val">6</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="F" title="Fluorine (Valency 1)">
+                <span class="atom-dot atom-dot-f"></span>
+                <span class="atom-sym">F</span>
+                <span class="atom-val">1</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="Cl" title="Chlorine (Valency 1)">
+                <span class="atom-dot atom-dot-cl"></span>
+                <span class="atom-sym">Cl</span>
+                <span class="atom-val">1</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="Br" title="Bromine (Valency 1)">
+                <span class="atom-dot atom-dot-br"></span>
+                <span class="atom-sym">Br</span>
+                <span class="atom-val">1</span>
+              </button>
+              <button class="atomic-spawn-chip" data-symbol="I" title="Iodine (Valency 1)">
+                <span class="atom-dot atom-dot-i"></span>
+                <span class="atom-sym">I</span>
+                <span class="atom-val">1</span>
+              </button>
+            </div>
+
+            <div class="atomic-toolbar-divider"></div>
+
+            <div class="atomic-tools-group">
+              <button id="builder-bond-mode-btn" class="atomic-tool-btn" title="Toggle Drag/Click Bond Mode">
+                <span class="tool-btn-icon">&#128279;</span>
+                <span class="tool-btn-text">Auto-Bond: ON</span>
+              </button>
+              <button id="builder-reset-cam-btn" class="atomic-tool-btn secondary" title="Reset View Camera &amp; Center Structure">
+                <span class="tool-btn-icon">&#8635;</span>
+                <span class="tool-btn-text">Center</span>
+              </button>
+              <button id="builder-relax-btn" class="atomic-tool-btn secondary" title="Relax and Align Molecular Geometry with VSEPR Physics">
+                <span class="tool-btn-icon">&#9879;&#65039;</span>
+                <span class="tool-btn-text">Relax / Align</span>
+              </button>
+              <button id="builder-clear-btn" class="atomic-tool-btn danger" title="Clear all atoms from 3D space">
+                <span class="tool-btn-icon">&#128465;&#65039;</span>
+                <span class="tool-btn-text">Clear All</span>
+              </button>
+              <button id="builder-toggle-json-btn" class="atomic-tool-btn secondary" title="View live molecular graph JSON">
+                <span class="tool-btn-icon">{ }</span>
+                <span class="tool-btn-text">JSON</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating On-Canvas Controls Dock (Permanently accessible, never clipped) -->
+        <div class="atomic-floating-controls" id="atomic-floating-controls">
+          <button id="canvas-floating-clear-btn" class="floating-atomic-btn danger" title="Clear all atoms from 3D viewport (Delete / Backspace)">
+            <span class="floating-btn-icon">&#129529;</span>
+            <span class="floating-btn-text">Clear Canvas</span>
+          </button>
+          <button id="canvas-floating-relax-btn" class="floating-atomic-btn" title="VSEPR Molecular Relaxation &amp; 3D Angle Optimization">
+            <span class="floating-btn-icon">&#9879;&#65039;</span>
+            <span class="floating-btn-text">Relax &amp; Align</span>
+          </button>
+          <button id="canvas-floating-center-btn" class="floating-atomic-btn" title="Center 3D View">
+            <span class="floating-btn-icon">&#127919;</span>
+            <span class="floating-btn-text">Center</span>
+          </button>
+        </div>
+
+        <!-- Drag-to-Bond Proximity Hint -->
+        <div class="builder-drag-hint" id="builder-drag-hint">
+          <span class="hint-icon">&#129522;</span> Drag atoms together to auto-bond!
+        </div>
+
+        <!-- 3D Builder Molecule Status / Matcher Dock -->
+        <div class="atomic-inspector-panel" id="atomic-inspector-panel">
+          <div class="inspector-badge-row">
+            <span class="inspector-pulse-dot"></span>
+            <span class="inspector-badge-title">3D ATOMIC GRAPH</span>
+            <span class="inspector-counts-badge" id="inspector-counts">0 atoms &bull; 0 bonds</span>
+          </div>
+          <div class="inspector-match-box" id="inspector-match-box">
+            <div class="match-formula-row">
+              <span class="match-formula" id="inspector-formula">&mdash;</span>
+              <span class="match-badge" id="inspector-match-badge">Empty Viewport</span>
+            </div>
+            <div class="match-name" id="inspector-name">Drag atoms from the top bar to begin assembling</div>
+          </div>
+          <div class="inspector-actions-row">
+            <button id="inspector-clear-btn" class="btn-inspector-clear" title="Clear all atoms from 3D viewport">&#128465;&#65039; Clear</button>
+            <button id="inspector-forge-btn" class="btn-primary" style="display: none;" title="Forge and unlock this compound!">
+              &#10024; Forge Compound
+            </button>
+          </div>
+          <!-- Live JSON Output Drawer (collapsible) -->
+          <div class="inspector-json-drawer" id="inspector-json-drawer" style="display: none;">
+            <div class="json-drawer-header">
+              <span>LIVE MOLECULAR GRAPH JSON</span>
+              <button id="inspector-copy-json-btn" class="json-copy-btn" title="Copy JSON to clipboard">&#128203; Copy</button>
+            </div>
+            <pre class="inspector-json-code" id="inspector-json-output">{}</pre>
+          </div>
+        </div>
+
+        <!-- Valency Alert Toast Notification -->
+        <div id="builder-valency-alert" class="builder-valency-alert" role="alert" aria-live="assertive"></div>
+      </section>
+
       <!-- RIGHT: Discovered Compounds Vault (Desktop) -->
       <aside id="compounds-bar" class="sidebar-pane compounds-sidebar" aria-label="Discovered Compounds">
         <div class="sidebar-header">
@@ -2625,24 +3614,6 @@ body.is-mobile .viewer-canvas-shell canvas {
       </div>
 
     </main>
-
-    <!-- Small Strip at the Bottom for Ads (Desktop & Mobile) -->
-    <footer id="bottom-ad-strip" class="bottom-ad-strip" aria-label="Advertisement">
-      <div class="ad-container ad-bottom-strip" id="ad-bottom-strip">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8864017003306664"
-             crossorigin="anonymous"></script>
-        <!-- periodicforge-footer-banner -->
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-8864017003306664"
-             data-ad-slot="6652632629"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-      </div>
-    </footer>
 
     <!-- Hover Detail Tooltip -->
     <div id="craft-tooltip" class="craft-tooltip" role="tooltip"></div>
@@ -2751,6 +3722,48 @@ body.is-mobile .viewer-canvas-shell canvas {
         <div class="modal-btn-row">
           <button id="cancel-reset-btn" class="btn-secondary">Cancel</button>
           <button id="confirm-reset-btn" class="btn-danger">Yes, Reset All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complete 118-Element Periodic Table Picker Modal -->
+    <div id="periodic-table-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="periodic-modal-title" style="display: none;">
+      <div class="modal-dialog periodic-picker-dialog">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span class="modal-header-icon">&#9883;</span>
+            <div>
+              <h2 id="periodic-modal-title" class="modal-title">Periodic Table &bull; All 118 Elements</h2>
+              <span class="modal-subtitle">Click any element to spawn directly into the 3D Atomic Builder</span>
+            </div>
+          </div>
+          <button id="close-periodic-modal-btn" class="modal-close-btn" aria-label="Close dialog">&#10005;</button>
+        </div>
+        <div class="periodic-picker-toolbar">
+          <div class="search-input-shell">
+            <svg class="search-icon-svg" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="periodic-picker-search" class="search-input-field" placeholder="Search 118 elements by name, symbol, or number (e.g. Carbon, Fe, 79)..." autocomplete="off" spellcheck="false" />
+            <button id="periodic-picker-clear-search" class="search-clear-cross" title="Clear search">&#10005;</button>
+          </div>
+          <div class="periodic-picker-filter-chips" id="periodic-picker-filter-chips">
+            <button class="picker-filter-chip active" data-filter="all">All (118)</button>
+            <button class="picker-filter-chip" data-filter="reactive-nonmetal">Nonmetals</button>
+            <button class="picker-filter-chip" data-filter="noble-gas">Noble Gases</button>
+            <button class="picker-filter-chip" data-filter="alkali-metal">Alkali Metals</button>
+            <button class="picker-filter-chip" data-filter="alkaline-earth">Alkaline Earth</button>
+            <button class="picker-filter-chip" data-filter="transition-metal">Transition Metals</button>
+            <button class="picker-filter-chip" data-filter="post-transition-metal">Post-Transition</button>
+            <button class="picker-filter-chip" data-filter="metalloid">Metalloids</button>
+            <button class="picker-filter-chip" data-filter="halogen">Halogens</button>
+            <button class="picker-filter-chip" data-filter="lanthanide">Lanthanides</button>
+            <button class="picker-filter-chip" data-filter="actinide">Actinides</button>
+          </div>
+        </div>
+        <div class="periodic-picker-grid" id="periodic-picker-grid">
+          <!-- Populated dynamically from PERIODIC_ELEMENTS -->
         </div>
       </div>
     </div>
@@ -6986,6 +7999,1392 @@ const audio = new SoundEngine();
   </script>
   <script>
 /**
+ * Periodic Forge: 3D Atomic Builder Engine (Three.js WebGL)
+ * 
+ * Features:
+ *  - 118 Elements Support: Complete CPK colors, covalent radii, and chemical valencies.
+ *    CPK standard: Carbon=Dark Gray (#2A2A2A), Hydrogen=White (#FFFFFF), Oxygen=Pink (#FB7185), Nitrogen=Blue (#2563EB).
+ *  - Drag-to-Bond Proximity Snapping: Dragging an atom near another automatically snaps & bonds with glowing magnetic guide.
+ *  - Rigid Molecule Dragging: Moving a bonded atom carries the entire molecule along seamlessly.
+ *  - Realistic 3D Cylindrical Bonds: Single, double (2 parallel cylinders), and triple (3 parallel cylinders) bonds
+ *    with two-tone CPK coloring.
+ *  - VSEPR 3D Physics Relaxation: Dynamic geometry relaxation to ideal covalent bond lengths and VSEPR angles
+ *    (tetrahedral 109.5°, trigonal planar 120°, bent 104.5°, linear 180°).
+ *  - Comprehensive Selection & Clear: Select atoms, delete with Delete/Backspace, and instant clear workspace.
+ *  - Live Molecular Graph JSON Output: Emits nodes & edges for chemical database matching.
+ */
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (typeof module === 'object' && module.exports) {
+    module.exports = factory();
+  } else {
+    root.AtomicBuilder3D = factory();
+  }
+}(typeof self !== 'undefined' ? self : this, function () {
+
+  // Strict CPK Color Coding as requested (Oxygen=Pink, Carbon=Dark Gray, Hydrogen=White, Nitrogen=Blue)
+  const BUILDER_CPK = {
+    H:   '#FFFFFF', // Hydrogen: White
+    He:  '#06B6D4', // Helium: Cyan
+    Li:  '#8B5CF6', // Lithium: Violet
+    Be:  '#10B981', // Beryllium: Emerald
+    B:   '#F43F5E', // Boron: Rose
+    C:   '#2A2A2A', // Carbon: Dark Gray (User requirement)
+    N:   '#2563EB', // Nitrogen: Blue (User requirement)
+    O:   '#FB7185', // Oxygen: Pink (User requirement)
+    F:   '#22C55E', // Fluorine: Light Green
+    Ne:  '#FB923C', // Neon: Orange
+    Na:  '#A855F7', // Sodium: Purple
+    Mg:  '#059669', // Magnesium: Emerald Green
+    Al:  '#94A3B8', // Aluminium: Silver Gray
+    Si:  '#D97706', // Silicon: Golden Tan
+    P:   '#EA580C', // Phosphorus: Orange
+    S:   '#EAB308', // Sulfur: Yellow
+    Cl:  '#16A34A', // Chlorine: Green
+    Ar:  '#14B8A6', // Argon: Teal
+    K:   '#6366F1', // Potassium: Indigo
+    Ca:  '#047857', // Calcium: Dark Green
+    Sc:  '#64748B', Ti: '#94A3B8', V: '#F59E0B', Cr: '#3B82F6', Mn: '#C084FC',
+    Fe:  '#B45309', // Iron: Rust Bronze
+    Co:  '#1D4ED8', Ni: '#0284C7',
+    Cu:  '#D97706', // Copper: Bronze
+    Zn:  '#64748B', // Zinc: Slate Blue
+    Ga:  '#9333EA', Ge: '#0D9488', As: '#84CC16', Se: '#EAB308',
+    Br:  '#991B1B', // Bromine: Red-Brown
+    Kr:  '#38BDF8', // Krypton: Light Blue
+    Rb:  '#4F46E5', Sr: '#065F46', Y: '#64748B', Zr: '#94A3B8', Nb: '#0284C7',
+    Mo:  '#2563EB', Tc: '#3B82F6', Ru: '#059669', Rh: '#047857', Pd: '#475569',
+    Ag:  '#E2E8F0', // Silver: Bright Silver
+    Cd:  '#64748B', In: '#9333EA', Sn: '#64748B', Sb: '#9D174D', Te: '#D97706',
+    I:   '#7C3AED', // Iodine: Purple
+    Xe:  '#818CF8', // Xenon: Indigo
+    Cs:  '#4338CA', Ba: '#064E3B', La: '#64748B', Ce: '#F59E0B', Pr: '#D97706',
+    Nd:  '#B45309', Sm: '#EA580C', Eu: '#DC2626', Gd: '#9333EA', Tb: '#7C3AED',
+    Dy:  '#6366F1', Ho: '#2563EB', Er: '#0284C7', Tm: '#0D9488', Yb: '#059669',
+    Lu:  '#10B981', Hf: '#64748B', Ta: '#94A3B8', W: '#3B82F6', Re: '#6366F1',
+    Os:  '#1D4ED8', Ir: '#047857',
+    Pt:  '#CBD5E1', // Platinum: Platinum Silver
+    Au:  '#F59E0B', // Gold: Golden Yellow
+    Hg:  '#94A3B8', // Mercury: Metallic Gray
+    Tl:  '#A855F7',
+    Pb:  '#64748B', // Lead: Slate Gray
+    Bi:  '#BE185D', Po: '#B45309', At: '#4C1D95', Rn: '#A78BFA',
+    Fr:  '#3730A3', Ra: '#022C22', Ac: '#64748B', Th: '#D97706', Pa: '#EA580C',
+    U:   '#16A34A', Np: '#0D9488', Pu: '#2563EB', Am: '#7C3AED', Cm: '#9333EA',
+    Bk:  '#C084FC', Cf: '#DB2777', Es: '#E11D48', Fm: '#EA580C', Md: '#D97706',
+    No:  '#65A30D', Lr: '#16A34A', Rf: '#64748B', Db: '#64748B', Sg: '#64748B',
+    Bh:  '#64748B', Hs: '#64748B', Mt: '#64748B', Ds: '#64748B', Rg: '#64748B',
+    Cn:  '#64748B', Nh: '#64748B', Fl: '#64748B', Mc: '#64748B', Lv: '#64748B',
+    Ts:  '#64748B', Og: '#A78BFA'
+  };
+
+  const DEFAULT_CPK = '#94A3B8';
+
+  // Proportional visual atomic sphere radii in 3D scene units
+  const ATOM_RADII = {
+    H:  0.38, He: 0.40,
+    Li: 0.62, Be: 0.54, B: 0.58, C: 0.65, N: 0.60, O: 0.56, F: 0.52, Ne: 0.46,
+    Na: 0.78, Mg: 0.74, Al: 0.72, Si: 0.72, P: 0.70, S: 0.72, Cl: 0.68, Ar: 0.58,
+    K:  0.86, Ca: 0.82, Sc: 0.76, Ti: 0.74, V: 0.72, Cr: 0.72, Mn: 0.72, Fe: 0.76,
+    Co: 0.74, Ni: 0.74, Cu: 0.76, Zn: 0.76, Ga: 0.72, Ge: 0.72, As: 0.70, Se: 0.72,
+    Br: 0.76, Kr: 0.64,
+    Rb: 0.90, Sr: 0.86, Y: 0.80, Zr: 0.78, Nb: 0.76, Mo: 0.76, Tc: 0.76, Ru: 0.76,
+    Rh: 0.76, Pd: 0.78, Ag: 0.82, Cd: 0.80, In: 0.76, Sn: 0.76, Sb: 0.74, Te: 0.74,
+    I:  0.84, Xe: 0.70,
+    Cs: 0.94, Ba: 0.90, Pt: 0.82, Au: 0.84, Hg: 0.82, Pb: 0.88, Bi: 0.86,
+    U:  0.88, Th: 0.88
+  };
+
+  // Covalent radii in scene units for realistic equilibrium bond distance calculation:
+  // d_ideal = covA + covB
+  const COVALENT_RADII = {
+    H:  0.37, He: 0.32,
+    Li: 1.02, Be: 0.75, B: 0.68, C: 0.68, N: 0.63, O: 0.58, F: 0.54, Ne: 0.48,
+    Na: 1.15, Mg: 0.98, Al: 0.88, Si: 0.85, P: 0.82, S: 0.80, Cl: 0.75, Ar: 0.68,
+    K:  1.38, Ca: 1.18, Sc: 1.05, Ti: 0.98, V: 0.92, Cr: 0.88, Mn: 0.86, Fe: 0.88,
+    Co: 0.85, Ni: 0.84, Cu: 0.86, Zn: 0.88, Ga: 0.86, Ge: 0.85, As: 0.83, Se: 0.82,
+    Br: 0.85, Kr: 0.78,
+    Rb: 1.50, Sr: 1.30, Ag: 1.05, Cd: 1.02, In: 0.98, Sn: 0.96, Sb: 0.94, Te: 0.92,
+    I:  0.98, Xe: 0.88,
+    Cs: 1.65, Ba: 1.45, Pt: 0.95, Au: 0.96, Hg: 0.98, Pb: 1.05, Bi: 1.02
+  };
+
+  // Maximum Chemical Valency Limits
+  const VALENCY_LIMITS = {
+    H: 1, He: 0,
+    Li: 1, Be: 2, B: 3, C: 4, N: 3, O: 2, F: 1, Ne: 0,
+    Na: 1, Mg: 2, Al: 3, Si: 4, P: 5, S: 6, Cl: 1, Ar: 0,
+    K: 1, Ca: 2, Sc: 3, Ti: 4, V: 5, Cr: 6, Mn: 7, Fe: 4, Co: 3, Ni: 2, Cu: 2, Zn: 2,
+    Ga: 3, Ge: 4, As: 3, Se: 4, Br: 1, Kr: 0,
+    Rb: 1, Sr: 2, Y: 3, Zr: 4, Nb: 5, Mo: 6, Ru: 4, Rh: 4, Pd: 4, Ag: 1, Cd: 2, In: 3, Sn: 4, Sb: 5, Te: 4,
+    I: 1, Xe: 0,
+    Cs: 1, Ba: 2, La: 3, Ce: 4, Pr: 3, Nd: 3, W: 6, Re: 7, Os: 4, Ir: 4, Pt: 4, Au: 3, Hg: 2, Tl: 3,
+    Pb: 4, Bi: 3, Po: 2, At: 1, Rn: 0,
+    Fr: 1, Ra: 2, Th: 4, U: 6
+  };
+
+  const METALS = new Set([
+    'Li','Be','Na','Mg','Al','K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga',
+    'Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn',
+    'Cs','Ba','La','Ce','Pr','Nd','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',
+    'Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po',
+    'Fr','Ra','Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr',
+    'Rf','Db','Sg','Bh','Hs','Mt','Ds','Rg','Cn','Nh','Fl','Mc','Lv','Ts'
+  ]);
+
+  class AtomicBuilder3D {
+    constructor(containerEl, canvasEl) {
+      this.container = containerEl;
+      this.canvas = canvasEl;
+
+      // Graph data structure
+      this.nodes = new Map(); // id -> { id, symbol, name, mesh, haloMesh, position: [x,y,z], maxValence, bonds: Set<edgeId> }
+      this.edges = new Map(); // id -> { id, sourceId, targetId, order, meshGroup }
+      this.atomCounter = 1;
+      this.edgeCounter = 1;
+
+      // Selection & Interaction mode state
+      this.isBondMode = false;
+      this.selectedAtom = null;          // Currently clicked/selected atom
+      this.selectedAtomForBond = null;  // For manual bond mode click A then B
+      this.isDraggingAtom = false;
+      this.draggedAtom = null;
+      this.draggedComponent = [];       // All atoms in the dragged molecule for rigid translation
+      this.dragOffsets = new Map();     // atomId -> Vector3 offset from draggedAtom
+      this.hasDragged = false;
+      this.dragStartPos = new THREE.Vector2();
+
+      // Drag-to-Bond Proximity Snap State
+      this.activeSnapTarget = null;     // Target atom candidate for auto-bond
+      this.magnetGuideMesh = null;      // Glowing attraction line between dragged and target
+
+      // Pointer & Math helpers for camera-plane projection
+      this.raycaster = new THREE.Raycaster();
+      this.pointer = new THREE.Vector2();
+      this.dragPlane = new THREE.Plane();
+      this.dragOffset = new THREE.Vector3();
+      this.planeIntersection = new THREE.Vector3();
+      this.activePointerId = null;
+
+      // Animation & rendering
+      this.animFrameId = null;
+      this.time = 0;
+      this.materialsCache = new Map();
+      this.sphereGeometries = new Map();
+
+      // Molecular relaxation physics animation
+      this.isRelaxing = false;
+      this.relaxFramesLeft = 0;
+
+      // UI Integration callback hooks
+      this.onGraphUpdate = null; // (graphJSON, detectedCompound) => {}
+      this.onValencyAlert = null; // (message) => {}
+      this.onSelectionChange = null; // (selectedAtom) => {}
+
+      this._initThree();
+      this._initEvents();
+    }
+
+    _initThree() {
+      if (typeof THREE === 'undefined') {
+        console.error('[AtomicBuilder3D] Three.js is not loaded!');
+        return;
+      }
+
+      const rect = this.container.getBoundingClientRect();
+      const width = Math.max(10, Math.floor(rect.width || this.canvas.clientWidth || 800));
+      const height = Math.max(10, Math.floor(rect.height || this.canvas.clientHeight || 600));
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
+      // 1. Scene
+      this.scene = new THREE.Scene();
+      this.scene.background = null;
+
+      // 2. Perspective Camera
+      this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      this.camera.position.set(0, 4.5, 12);
+      this.camera.lookAt(0, 0, 0);
+
+      // 3. WebGLRenderer with Soft Shadows and ACES Tone Mapping
+      this.renderer = new THREE.WebGLRenderer({
+        canvas: this.canvas,
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance'
+      });
+      this.renderer.setPixelRatio(pixelRatio);
+      this.renderer.setSize(width, height, false);
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      if (THREE.sRGBEncoding) {
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+      }
+      if (THREE.ACESFilmicToneMapping) {
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.05;
+      }
+
+      // 4. OrbitControls
+      if (typeof THREE.OrbitControls !== 'undefined') {
+        this.controls = new THREE.OrbitControls(this.camera, this.canvas);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.08;
+        this.controls.rotateSpeed = 0.8;
+        this.controls.zoomSpeed = 1.0;
+        this.controls.minDistance = 2.0;
+        this.controls.maxDistance = 60.0;
+        this.controls.target.set(0, 0, 0);
+      } else {
+        this.controls = { enabled: true, update: () => {} };
+      }
+
+      // 5. Lighting Setup: Warm key light with soft shadow mapping, cool fill light, ambient rim
+      this.keyLight = new THREE.DirectionalLight(0xfff7ed, 1.45);
+      this.keyLight.position.set(8, 12, 10);
+      this.keyLight.castShadow = true;
+      this.keyLight.shadow.mapSize.width = 1024;
+      this.keyLight.shadow.mapSize.height = 1024;
+      this.keyLight.shadow.bias = -0.0005;
+      this.scene.add(this.keyLight);
+
+      this.fillLight = new THREE.DirectionalLight(0xdbeafe, 0.65);
+      this.fillLight.position.set(-8, -4, -6);
+      this.scene.add(this.fillLight);
+
+      this.rimLight = new THREE.DirectionalLight(0xfef08a, 0.4);
+      this.rimLight.position.set(0, 8, -10);
+      this.scene.add(this.rimLight);
+
+      this.hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.55);
+      this.scene.add(this.hemiLight);
+
+      this.ambLight = new THREE.AmbientLight(0xffffff, 0.25);
+      this.scene.add(this.ambLight);
+
+      // 6. Scene Sub-Groups
+      this.atomsGroup = new THREE.Group();
+      this.bondsGroup = new THREE.Group();
+      this.helpersGroup = new THREE.Group();
+      this.scene.add(this.bondsGroup);
+      this.scene.add(this.atomsGroup);
+      this.scene.add(this.helpersGroup);
+
+      // Grid plate
+      const grid = new THREE.GridHelper(24, 24, 0x0284c7, 0xe2e8f0);
+      grid.position.y = -3.5;
+      grid.material.opacity = 0.25;
+      grid.material.transparent = true;
+      this.helpersGroup.add(grid);
+
+      // Magnetic Auto-Bond Preview Beam
+      const guideGeom = new THREE.CylinderGeometry(0.04, 0.04, 1, 12);
+      const guideMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.75,
+        wireframe: false
+      });
+      this.magnetGuideMesh = new THREE.Mesh(guideGeom, guideMat);
+      this.magnetGuideMesh.visible = false;
+      this.helpersGroup.add(this.magnetGuideMesh);
+
+      // Reusable base bond materials
+      this.bondBaseMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color('#d4d4d8'),
+        metalness: 0.20,
+        roughness: 0.20,
+        clearcoat: 0.65
+      });
+
+      // Start RAF render loop
+      this.start();
+    }
+
+    _getAtomRadius(symbol) {
+      return ATOM_RADII[symbol] || 0.65;
+    }
+
+    _getCovalentRadius(symbol) {
+      return COVALENT_RADII[symbol] || 0.70;
+    }
+
+    _getAtomValency(symbol) {
+      if (symbol in VALENCY_LIMITS) return VALENCY_LIMITS[symbol];
+      if (window.ELEMENT_MAP && window.ELEMENT_MAP.has(symbol)) {
+        const el = window.ELEMENT_MAP.get(symbol);
+        if (el.valence && el.valence.length > 0) {
+          const maxV = Math.max(...el.valence.map(v => Math.abs(v)));
+          return Math.max(1, maxV);
+        }
+      }
+      return 4;
+    }
+
+    _getSphereGeometry(radius) {
+      const key = Math.round(radius * 100);
+      if (!this.sphereGeometries.has(key)) {
+        this.sphereGeometries.set(key, new THREE.SphereGeometry(radius, 32, 24));
+      }
+      return this.sphereGeometries.get(key);
+    }
+
+    _getAtomMaterial(symbol) {
+      if (!this.materialsCache.has(symbol)) {
+        const colorHex = BUILDER_CPK[symbol] || DEFAULT_CPK;
+        const isMetal = METALS.has(symbol);
+
+        // Realistic PBR material: MeshPhysicalMaterial with metallic/glossy finish, clearcoat and emissive highlight
+        const mat = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(colorHex),
+          roughness: isMetal ? 0.22 : 0.16,
+          metalness: isMetal ? 0.75 : 0.15,
+          clearcoat: 0.85,
+          clearcoatRoughness: 0.10,
+          reflectivity: 0.85,
+          emissive: new THREE.Color(colorHex).multiplyScalar(0.20),
+          emissiveIntensity: 0.32
+        });
+        this.materialsCache.set(symbol, mat);
+      }
+      return this.materialsCache.get(symbol);
+    }
+
+    // Interactive Dragging, Drag-to-Bond, and Keyboard Events
+    _initEvents() {
+      if (!this.canvas) return;
+
+      const updatePointerPos = (e) => {
+        const rect = this.canvas.getBoundingClientRect();
+        this.pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      };
+
+      this.canvas.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return; // Left click / primary touch only
+        this.activePointerId = e.pointerId;
+        try {
+          this.canvas.setPointerCapture?.(e.pointerId);
+        } catch (_) {}
+
+        updatePointerPos(e);
+        this.dragStartPos.set(e.clientX, e.clientY);
+        this.hasDragged = false;
+        this.raycaster.setFromCamera(this.pointer, this.camera);
+
+        const atomMeshes = Array.from(this.nodes.values()).map(n => n.mesh);
+        const intersects = this.raycaster.intersectObjects(atomMeshes, false);
+
+        if (intersects.length > 0) {
+          const hitMesh = intersects[0].object;
+          const hitAtom = hitMesh.userData.atomData;
+
+          if (this.isBondMode) {
+            // Manual Bond Mode Click-to-Bond
+            this._handleBondModeClick(hitAtom);
+          } else {
+            // Drag Atom Interaction
+            if (this.controls) this.controls.enabled = false;
+            this.isDraggingAtom = true;
+            this.draggedAtom = hitAtom;
+
+            // Select this atom
+            this.selectAtom(hitAtom);
+
+            // Compute connected component so the entire molecule moves rigidly together!
+            this.draggedComponent = this._getConnectedComponent(hitAtom.id);
+            this.dragOffsets.clear();
+            const rootPos = hitAtom.mesh.position;
+            this.draggedComponent.forEach(atom => {
+              this.dragOffsets.set(atom.id, atom.mesh.position.clone().sub(rootPos));
+            });
+
+            // Camera-plane projection
+            const planeNormal = this.camera.getWorldDirection(new THREE.Vector3()).negate();
+            this.dragPlane.setFromNormalAndCoplanarPoint(planeNormal, hitMesh.position);
+
+            if (this.raycaster.ray.intersectPlane(this.dragPlane, this.planeIntersection)) {
+              this.dragOffset.subVectors(hitMesh.position, this.planeIntersection);
+            }
+          }
+        } else {
+          // Clicked empty space
+          if (this.isBondMode && this.selectedAtomForBond) {
+            this._deselectBondAtom();
+          } else {
+            this.deselectAtom();
+          }
+        }
+      });
+
+      this.canvas.addEventListener('pointermove', (e) => {
+        if (this.activePointerId !== null && e.pointerId !== this.activePointerId) return;
+        updatePointerPos(e);
+
+        if (this.isDraggingAtom && this.draggedAtom) {
+          const moveDist = Math.hypot(e.clientX - this.dragStartPos.x, e.clientY - this.dragStartPos.y);
+          if (moveDist > 4) {
+            this.hasDragged = true;
+          }
+
+          this.raycaster.setFromCamera(this.pointer, this.camera);
+          if (this.raycaster.ray.intersectPlane(this.dragPlane, this.planeIntersection)) {
+            const rootTarget = this.planeIntersection.clone().add(this.dragOffset);
+
+            // Move the entire connected molecule together rigidly!
+            this.draggedComponent.forEach(atom => {
+              const rel = this.dragOffsets.get(atom.id) || new THREE.Vector3();
+              const pos = rootTarget.clone().add(rel);
+              atom.mesh.position.copy(pos);
+              atom.position = [
+                parseFloat(pos.x.toFixed(3)),
+                parseFloat(pos.y.toFixed(3)),
+                parseFloat(pos.z.toFixed(3))
+              ];
+              if (atom.haloMesh) {
+                atom.haloMesh.position.copy(pos);
+              }
+              this._updateConnectedBonds(atom.id);
+            });
+
+            // -------------------------------------------------------------
+            // DRAG-TO-BOND PROXIMITY DETECTION
+            // Find closest atom outside the currently dragged molecule
+            // -------------------------------------------------------------
+            const draggedCompIds = new Set(this.draggedComponent.map(a => a.id));
+            let closestTarget = null;
+            let closestDist = Infinity;
+            const snapThreshold = 2.4; // Detection radius in 3D units
+
+            const usedValenceDragged = this.getUsedValency(this.draggedAtom.id);
+            const canDraggedBond = usedValenceDragged < this.draggedAtom.maxValence;
+
+            if (canDraggedBond) {
+              for (const [id, candidate] of this.nodes) {
+                if (draggedCompIds.has(id)) continue; // Must be in a different molecule fragment
+
+                const usedTarget = this.getUsedValency(id);
+                if (usedTarget >= candidate.maxValence) continue; // Target is full
+
+                const d = this.draggedAtom.mesh.position.distanceTo(candidate.mesh.position);
+                if (d < snapThreshold && d < closestDist) {
+                  closestDist = d;
+                  closestTarget = candidate;
+                }
+              }
+            }
+
+            if (closestTarget) {
+              this.activeSnapTarget = closestTarget;
+              this._showMagnetGuide(this.draggedAtom, closestTarget);
+              this.canvas.style.cursor = 'copy';
+            } else {
+              this.activeSnapTarget = null;
+              this._hideMagnetGuide();
+              this.canvas.style.cursor = 'grabbing';
+            }
+
+            this._emitGraphUpdate();
+          }
+        }
+      });
+
+      const endPointer = (e) => {
+        if (this.activePointerId !== null && e.pointerId !== this.activePointerId) return;
+        try {
+          if (this.canvas.hasPointerCapture?.(e.pointerId)) {
+            this.canvas.releasePointerCapture(e.pointerId);
+          }
+        } catch (_) {}
+        this.activePointerId = null;
+
+        if (this.isDraggingAtom) {
+          const wasDragging = this.hasDragged;
+          const snapTarget = this.activeSnapTarget;
+          const dragged = this.draggedAtom;
+
+          this.isDraggingAtom = false;
+          this.draggedAtom = null;
+          this.draggedComponent = [];
+          this.dragOffsets.clear();
+          this.activeSnapTarget = null;
+          this._hideMagnetGuide();
+          this.canvas.style.cursor = this.isBondMode ? 'crosshair' : 'grab';
+
+          if (this.controls) this.controls.enabled = true;
+
+          // -------------------------------------------------------------
+          // AUTO-BOND SNAP ON DROP
+          // -------------------------------------------------------------
+          if (wasDragging && snapTarget && dragged) {
+            const success = this.createBond(dragged.id, snapTarget.id);
+            if (success) {
+              // Snap dragged atom to realistic equilibrium bond distance
+              this._snapToEquilibriumDistance(dragged, snapTarget);
+              // Trigger VSEPR relaxation physics to smoothly orient in 3D
+              this.relaxMolecularGeometry(35);
+            }
+          }
+
+          this._emitGraphUpdate();
+        }
+      };
+
+      this.canvas.addEventListener('pointerup', endPointer);
+      this.canvas.addEventListener('pointercancel', endPointer);
+
+      // Keyboard shortcuts: Delete/Backspace to delete selected atom
+      window.addEventListener('keydown', (e) => {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (this.selectedAtom) {
+            e.preventDefault();
+            this.removeAtom(this.selectedAtom.id);
+            this.deselectAtom();
+          }
+        }
+      });
+
+      window.addEventListener('resize', () => this.resize());
+    }
+
+    _showMagnetGuide(atomA, atomB) {
+      if (!this.magnetGuideMesh) return;
+      const posA = atomA.mesh.position;
+      const posB = atomB.mesh.position;
+      const dist = posA.distanceTo(posB);
+      if (dist < 0.001) return;
+
+      const midpoint = new THREE.Vector3().addVectors(posA, posB).multiplyScalar(0.5);
+      const direction = new THREE.Vector3().subVectors(posB, posA).normalize();
+      const yAxis = new THREE.Vector3(0, 1, 0);
+      const quaternion = new THREE.Quaternion().setFromUnitVectors(yAxis, direction);
+
+      this.magnetGuideMesh.position.copy(midpoint);
+      this.magnetGuideMesh.quaternion.copy(quaternion);
+      this.magnetGuideMesh.scale.set(1, dist, 1);
+      this.magnetGuideMesh.visible = true;
+    }
+
+    _hideMagnetGuide() {
+      if (this.magnetGuideMesh) {
+        this.magnetGuideMesh.visible = false;
+      }
+    }
+
+    _snapToEquilibriumDistance(draggedAtom, targetAtom) {
+      const posD = draggedAtom.mesh.position;
+      const posT = targetAtom.mesh.position;
+      const dir = new THREE.Vector3().subVectors(posD, posT);
+      let len = dir.length();
+      if (len < 0.001) {
+        dir.set(1, 0, 0);
+        len = 1;
+      }
+      dir.normalize();
+
+      const idealDist = (this._getCovalentRadius(draggedAtom.symbol) + this._getCovalentRadius(targetAtom.symbol)) * 1.25;
+      const newPos = posT.clone().add(dir.multiplyScalar(idealDist));
+      const delta = newPos.clone().sub(posD);
+
+      draggedAtom.mesh.position.copy(newPos);
+      draggedAtom.position = [
+        parseFloat(newPos.x.toFixed(3)),
+        parseFloat(newPos.y.toFixed(3)),
+        parseFloat(newPos.z.toFixed(3))
+      ];
+      if (draggedAtom.haloMesh) draggedAtom.haloMesh.position.copy(newPos);
+
+      this._updateConnectedBonds(draggedAtom.id);
+    }
+
+    _getConnectedComponent(rootAtomId) {
+      const component = [];
+      const visited = new Set();
+      const queue = [rootAtomId];
+      visited.add(rootAtomId);
+
+      while (queue.length > 0) {
+        const currId = queue.shift();
+        const atom = this.nodes.get(currId);
+        if (!atom) continue;
+        component.push(atom);
+
+        for (const edgeId of atom.bonds) {
+          const edge = this.edges.get(edgeId);
+          if (!edge) continue;
+          const neighborId = (edge.sourceId === currId) ? edge.targetId : edge.sourceId;
+          if (!visited.has(neighborId)) {
+            visited.add(neighborId);
+            queue.push(neighborId);
+          }
+        }
+      }
+      return component;
+    }
+
+    // Atom Selection & Halo Management
+    selectAtom(atom) {
+      this.deselectAtom();
+      this.selectedAtom = atom;
+
+      if (!this.selectionHalo) {
+        const haloGeom = new THREE.TorusGeometry(1.0, 0.04, 16, 64);
+        const haloMat = new THREE.MeshBasicMaterial({
+          color: 0x38bdf8,
+          transparent: true,
+          opacity: 0.90
+        });
+        this.selectionHalo = new THREE.Mesh(haloGeom, haloMat);
+        this.helpersGroup.add(this.selectionHalo);
+      }
+
+      this.selectionHalo.scale.setScalar(atom.radius * 1.45);
+      this.selectionHalo.position.copy(atom.mesh.position);
+      this.selectionHalo.visible = true;
+      atom.haloMesh = this.selectionHalo;
+
+      if (typeof this.onSelectionChange === 'function') {
+        this.onSelectionChange(atom);
+      }
+    }
+
+    deselectAtom() {
+      if (this.selectedAtom && this.selectedAtom.haloMesh) {
+        this.selectedAtom.haloMesh.visible = false;
+        this.selectedAtom.haloMesh = null;
+      }
+      this.selectedAtom = null;
+      if (typeof this.onSelectionChange === 'function') {
+        this.onSelectionChange(null);
+      }
+    }
+
+    removeSelectedAtom() {
+      if (this.selectedAtom) {
+        const id = this.selectedAtom.id;
+        this.deselectAtom();
+        this.removeAtom(id);
+      }
+    }
+
+    _handleBondModeClick(atom) {
+      if (!this.selectedAtomForBond) {
+        this.selectedAtomForBond = atom;
+        this.selectAtom(atom);
+        if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+      } else if (this.selectedAtomForBond.id === atom.id) {
+        this._deselectBondAtom();
+        if (window.audio && typeof window.audio.playPop === 'function') window.audio.playPop();
+      } else {
+        const atomA = this.selectedAtomForBond;
+        const atomB = atom;
+        this.createBond(atomA.id, atomB.id);
+        this._deselectBondAtom();
+      }
+    }
+
+    _deselectBondAtom() {
+      this.deselectAtom();
+      this.selectedAtomForBond = null;
+    }
+
+    toggleBondMode(forceState) {
+      this.isBondMode = (typeof forceState === 'boolean') ? forceState : !this.isBondMode;
+      this._deselectBondAtom();
+      this.canvas.style.cursor = this.isBondMode ? 'crosshair' : 'grab';
+      return this.isBondMode;
+    }
+
+    // Atom Spawning & Management
+    spawnAtom(symbol, initialPos = null) {
+      const sym = symbol ? symbol.trim() : 'C';
+      const id = `atom_${this.atomCounter++}`;
+      const radius = this._getAtomRadius(sym);
+      const maxValence = this._getAtomValency(sym);
+      const geom = this._getSphereGeometry(radius);
+      const mat = this._getAtomMaterial(sym);
+
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      if (initialPos && Array.isArray(initialPos)) {
+        mesh.position.set(initialPos[0], initialPos[1], initialPos[2]);
+      } else {
+        const spread = 2.4;
+        const rx = (Math.random() - 0.5) * spread;
+        const ry = (Math.random() - 0.5) * spread;
+        const rz = (Math.random() - 0.5) * 0.8;
+        mesh.position.set(rx, ry, rz);
+      }
+
+      let atomName = sym;
+      if (window.ELEMENT_MAP && window.ELEMENT_MAP.has(sym)) {
+        atomName = window.ELEMENT_MAP.get(sym).name;
+      }
+
+      const atomData = {
+        id: id,
+        symbol: sym,
+        name: atomName,
+        radius: radius,
+        maxValence: maxValence,
+        mesh: mesh,
+        haloMesh: null,
+        position: [
+          parseFloat(mesh.position.x.toFixed(3)),
+          parseFloat(mesh.position.y.toFixed(3)),
+          parseFloat(mesh.position.z.toFixed(3))
+        ],
+        bonds: new Set()
+      };
+
+      mesh.userData = { atomData };
+      this.atomsGroup.add(mesh);
+      this.nodes.set(id, atomData);
+
+      // Auto-select newly spawned atom
+      this.selectAtom(atomData);
+
+      if (window.audio && typeof window.audio.playSpawn === 'function') {
+        window.audio.playSpawn();
+      }
+
+      this._emitGraphUpdate();
+      return atomData;
+    }
+
+    removeAtom(atomId) {
+      const atom = this.nodes.get(atomId);
+      if (!atom) return;
+
+      const connectedEdgeIds = Array.from(atom.bonds);
+      connectedEdgeIds.forEach(edgeId => this.removeBond(edgeId));
+
+      if (atom.haloMesh) {
+        atom.haloMesh.visible = false;
+      }
+      this.atomsGroup.remove(atom.mesh);
+      this.nodes.delete(atomId);
+
+      if (this.selectedAtom && this.selectedAtom.id === atomId) {
+        this.selectedAtom = null;
+      }
+
+      if (window.audio && typeof window.audio.playPop === 'function') {
+        window.audio.playPop();
+      }
+
+      this._emitGraphUpdate();
+    }
+
+    getUsedValency(atomId) {
+      const atom = this.nodes.get(atomId);
+      if (!atom) return 0;
+      let totalUsed = 0;
+      for (const edgeId of atom.bonds) {
+        const edge = this.edges.get(edgeId);
+        if (edge) totalUsed += edge.order || 1;
+      }
+      return totalUsed;
+    }
+
+    // Chemical Bonding Mechanism & Valency Enforcement
+    createBond(atomAId, atomBId, bondOrder = 1) {
+      if (atomAId === atomBId) return false;
+      const atomA = this.nodes.get(atomAId);
+      const atomB = this.nodes.get(atomBId);
+      if (!atomA || !atomB) return false;
+
+      // Existing bond check
+      let existingEdge = null;
+      for (const edgeId of atomA.bonds) {
+        const edge = this.edges.get(edgeId);
+        if (edge && ((edge.sourceId === atomAId && edge.targetId === atomBId) || (edge.sourceId === atomBId && edge.targetId === atomAId))) {
+          existingEdge = edge;
+          break;
+        }
+      }
+
+      const usedA = this.getUsedValency(atomAId);
+      const usedB = this.getUsedValency(atomBId);
+
+      if (existingEdge) {
+        // Upgrade existing bond order (single -> double -> triple)
+        const newOrder = existingEdge.order + 1;
+        if (newOrder > 3) {
+          this._triggerValencyAlert(`Maximum bond order is 3 (triple bond). Cannot form quadruple bond between ${atomA.symbol} and ${atomB.symbol}.`);
+          return false;
+        }
+        if (usedA + 1 > atomA.maxValence) {
+          this._triggerValencyAlert(`Valency limit reached! ${atomA.symbol} (${atomA.name}) can form at most ${atomA.maxValence} bonds (currently using ${usedA}).`);
+          return false;
+        }
+        if (usedB + 1 > atomB.maxValence) {
+          this._triggerValencyAlert(`Valency limit reached! ${atomB.symbol} (${atomB.name}) can form at most ${atomB.maxValence} bonds (currently using ${usedB}).`);
+          return false;
+        }
+
+        existingEdge.order = newOrder;
+        this._updateBondMeshGeometry(existingEdge);
+        if (window.audio && typeof window.audio.playMerge === 'function') window.audio.playMerge();
+        this._emitGraphUpdate();
+        return true;
+      }
+
+      // Creating new bond
+      if (usedA + bondOrder > atomA.maxValence) {
+        this._triggerValencyAlert(`Valency limit reached! ${atomA.symbol} (${atomA.name}) can form at most ${atomA.maxValence} bonds (currently using ${usedA}/${atomA.maxValence}).`);
+        return false;
+      }
+      if (usedB + bondOrder > atomB.maxValence) {
+        this._triggerValencyAlert(`Valency limit reached! ${atomB.symbol} (${atomB.name}) can form at most ${atomB.maxValence} bonds (currently using ${usedB}/${atomB.maxValence}).`);
+        return false;
+      }
+
+      // Build 3D Multi-Cylinder Bond Group
+      const edgeId = `edge_${this.edgeCounter++}`;
+      const meshGroup = new THREE.Group();
+      this.bondsGroup.add(meshGroup);
+
+      const edgeData = {
+        id: edgeId,
+        sourceId: atomAId,
+        targetId: atomBId,
+        order: bondOrder,
+        meshGroup: meshGroup
+      };
+
+      this.edges.set(edgeId, edgeData);
+      atomA.bonds.add(edgeId);
+      atomB.bonds.add(edgeId);
+
+      this._updateBondMeshGeometry(edgeData);
+
+      if (window.audio && typeof window.audio.playMerge === 'function') {
+        window.audio.playMerge();
+      }
+
+      this._emitGraphUpdate();
+      return true;
+    }
+
+    removeBond(edgeId) {
+      const edge = this.edges.get(edgeId);
+      if (!edge) return;
+
+      const atomA = this.nodes.get(edge.sourceId);
+      const atomB = this.nodes.get(edge.targetId);
+      if (atomA) atomA.bonds.delete(edgeId);
+      if (atomB) atomB.bonds.delete(edgeId);
+
+      if (edge.meshGroup) {
+        this._clearGroupChildren(edge.meshGroup);
+        this.bondsGroup.remove(edge.meshGroup);
+      }
+      this.edges.delete(edgeId);
+
+      this._emitGraphUpdate();
+    }
+
+    _updateConnectedBonds(atomId) {
+      const atom = this.nodes.get(atomId);
+      if (!atom) return;
+      for (const edgeId of atom.bonds) {
+        const edge = this.edges.get(edgeId);
+        if (edge) this._updateBondMeshGeometry(edge);
+      }
+    }
+
+    _clearGroupChildren(group) {
+      while (group.children.length > 0) {
+        const child = group.children[0];
+        group.remove(child);
+        if (child.geometry) child.geometry.dispose();
+      }
+    }
+
+    // Dynamic 3D Cylindrical Bond Positioning with Multi-Cylinder Rendering
+    // Single bond = 1 cylinder
+    // Double bond = 2 parallel cylinders offset by +/- 0.10 units
+    // Triple bond = 3 parallel cylinders in triangular configuration
+    // Each cylinder features two-tone CPK halves (Atom A color -> Atom B color)
+    _updateBondMeshGeometry(edge) {
+      const atomA = this.nodes.get(edge.sourceId);
+      const atomB = this.nodes.get(edge.targetId);
+      if (!atomA || !atomB || !edge.meshGroup) return;
+
+      const posA = atomA.mesh.position;
+      const posB = atomB.mesh.position;
+      const distance = posA.distanceTo(posB);
+      if (distance < 0.001) return;
+
+      const group = edge.meshGroup;
+      this._clearGroupChildren(group);
+
+      const midpoint = new THREE.Vector3().addVectors(posA, posB).multiplyScalar(0.5);
+      const direction = new THREE.Vector3().subVectors(posB, posA).normalize();
+      const yAxis = new THREE.Vector3(0, 1, 0);
+      const quaternion = new THREE.Quaternion().setFromUnitVectors(yAxis, direction);
+
+      group.position.copy(midpoint);
+      group.quaternion.copy(quaternion);
+
+      // Bond radius and lateral offsets for multi-bonds
+      const order = edge.order || 1;
+      let offsets = [];
+      let cylRadius = 0.075;
+
+      if (order === 1) {
+        offsets = [{ x: 0, z: 0 }];
+        cylRadius = 0.082;
+      } else if (order === 2) {
+        const off = 0.11;
+        offsets = [{ x: -off, z: 0 }, { x: off, z: 0 }];
+        cylRadius = 0.065;
+      } else if (order >= 3) {
+        const r = 0.12;
+        offsets = [
+          { x: 0, z: r },
+          { x: r * Math.cos(Math.PI / 6), z: -r * Math.sin(Math.PI / 6) },
+          { x: -r * Math.cos(Math.PI / 6), z: -r * Math.sin(Math.PI / 6) }
+        ];
+        cylRadius = 0.058;
+      }
+
+      const halfDist = distance * 0.5;
+      const matA = this._getAtomMaterial(atomA.symbol);
+      const matB = this._getAtomMaterial(atomB.symbol);
+
+      offsets.forEach(off => {
+        // Two-tone split: Half A (towards posA, negative Y in local frame)
+        const geomA = new THREE.CylinderGeometry(cylRadius, cylRadius, halfDist, 16);
+        const meshA = new THREE.Mesh(geomA, matA);
+        meshA.position.set(off.x, -halfDist * 0.5, off.z);
+        meshA.castShadow = true;
+        meshA.receiveShadow = true;
+        group.add(meshA);
+
+        // Half B (towards posB, positive Y in local frame)
+        const geomB = new THREE.CylinderGeometry(cylRadius, cylRadius, halfDist, 16);
+        const meshB = new THREE.Mesh(geomB, matB);
+        meshB.position.set(off.x, halfDist * 0.5, off.z);
+        meshB.castShadow = true;
+        meshB.receiveShadow = true;
+        group.add(meshB);
+      });
+    }
+
+    // ------------------------------------------------------------------------
+    // VSEPR Molecular Relaxation Physics Engine
+    // Simulates Hooke's law covalent springs, VSEPR angular repulsion, and
+    // non-bonded steric repulsion to settle molecules into realistic 3D shapes.
+    // ------------------------------------------------------------------------
+    relaxMolecularGeometry(steps = 45) {
+      if (this.nodes.size < 2) return;
+      this.relaxFramesLeft = steps;
+      this.isRelaxing = true;
+    }
+
+    _stepRelaxationPhysics() {
+      if (this.relaxFramesLeft <= 0) {
+        this.isRelaxing = false;
+        return;
+      }
+      this.relaxFramesLeft--;
+
+      const nodeList = Array.from(this.nodes.values());
+      const n = nodeList.length;
+      if (n < 2) return;
+
+      const forces = new Map();
+      nodeList.forEach(node => forces.set(node.id, new THREE.Vector3()));
+
+      // 1. Bond Spring Forces (Hooke's Law towards equilibrium covalent bond distance)
+      for (const edge of this.edges.values()) {
+        const a = this.nodes.get(edge.sourceId);
+        const b = this.nodes.get(edge.targetId);
+        if (!a || !b) continue;
+
+        const posA = a.mesh.position;
+        const posB = b.mesh.position;
+        const delta = new THREE.Vector3().subVectors(posB, posA);
+        const d = delta.length() || 0.001;
+
+        // Ideal distance scaled by bond order
+        let orderFactor = 1.0;
+        if (edge.order === 2) orderFactor = 0.88;
+        if (edge.order === 3) orderFactor = 0.80;
+
+        const idealDist = (this._getCovalentRadius(a.symbol) + this._getCovalentRadius(b.symbol)) * 1.25 * orderFactor;
+        const stretch = d - idealDist;
+        const forceMag = stretch * 0.18;
+        const f = delta.clone().normalize().multiplyScalar(forceMag);
+
+        forces.get(a.id).add(f);
+        forces.get(b.id).sub(f);
+      }
+
+      // 2. Non-bonded Steric Repulsion (prevent atomic collision & overlap)
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = nodeList[i];
+          const b = nodeList[j];
+
+          // Check if directly bonded
+          let areBonded = false;
+          for (const edgeId of a.bonds) {
+            const edge = this.edges.get(edgeId);
+            if (edge && (edge.sourceId === b.id || edge.targetId === b.id)) {
+              areBonded = true;
+              break;
+            }
+          }
+
+          const posA = a.mesh.position;
+          const posB = b.mesh.position;
+          const delta = new THREE.Vector3().subVectors(posB, posA);
+          const d = delta.length() || 0.001;
+          const minDist = (a.radius + b.radius) * (areBonded ? 0.85 : 1.25);
+
+          if (d < minDist) {
+            const repMag = ((minDist - d) / minDist) * (areBonded ? 0.12 : 0.22);
+            const rf = delta.clone().normalize().multiplyScalar(repMag);
+            forces.get(a.id).sub(rf);
+            forces.get(b.id).add(rf);
+          }
+        }
+      }
+
+      // 3. VSEPR Angular Forces (Drives bond angles to 109.5°, 120°, 104.5°, 180°)
+      for (const centerAtom of nodeList) {
+        if (centerAtom.bonds.size < 2) continue;
+
+        // Get all bonded neighbor atom positions
+        const neighbors = [];
+        for (const edgeId of centerAtom.bonds) {
+          const edge = this.edges.get(edgeId);
+          if (!edge) continue;
+          const neighborId = (edge.sourceId === centerAtom.id) ? edge.targetId : edge.sourceId;
+          const nb = this.nodes.get(neighborId);
+          if (nb) neighbors.push({ atom: nb, edge });
+        }
+
+        const centerPos = centerAtom.mesh.position;
+        const numBonds = neighbors.length;
+
+        // Determine ideal angle based on central atom hybridization & valence
+        let idealAngle = Math.PI * 109.5 / 180; // Default Tetrahedral: 109.5°
+        if (centerAtom.symbol === 'O' || centerAtom.symbol === 'S') {
+          idealAngle = Math.PI * 104.5 / 180; // Bent: 104.5°
+        } else if (centerAtom.symbol === 'N' || centerAtom.symbol === 'P') {
+          idealAngle = Math.PI * 107.0 / 180; // Trigonal Pyramidal: 107°
+        } else if (numBonds === 2) {
+          // If double bonds exist, linear (180°)
+          const hasDouble = neighbors.some(n => n.edge.order >= 2);
+          idealAngle = hasDouble ? Math.PI : Math.PI * 109.5 / 180;
+        } else if (numBonds === 3) {
+          idealAngle = Math.PI * 120 / 180; // Trigonal Planar: 120°
+        }
+
+        // Pairwise angle forces among neighbor vectors
+        for (let i = 0; i < neighbors.length; i++) {
+          for (let j = i + 1; j < neighbors.length; j++) {
+            const nbA = neighbors[i].atom;
+            const nbB = neighbors[j].atom;
+
+            const vA = new THREE.Vector3().subVectors(nbA.mesh.position, centerPos);
+            const vB = new THREE.Vector3().subVectors(nbB.mesh.position, centerPos);
+            const lenA = vA.length();
+            const lenB = vB.length();
+            if (lenA < 0.001 || lenB < 0.001) continue;
+
+            const uA = vA.clone().normalize();
+            const uB = vB.clone().normalize();
+            const currentCos = Math.max(-1, Math.min(1, uA.dot(uB)));
+            const currentAngle = Math.acos(currentCos);
+
+            const angleError = currentAngle - idealAngle;
+            if (Math.abs(angleError) > 0.01) {
+              const normal = new THREE.Vector3().crossVectors(uA, uB).normalize();
+              if (normal.length() > 0.001) {
+                const torqueA = new THREE.Vector3().crossVectors(normal, uA).normalize().multiplyScalar(angleError * 0.08);
+                const torqueB = new THREE.Vector3().crossVectors(uB, normal).normalize().multiplyScalar(angleError * 0.08);
+                forces.get(nbA.id).add(torqueA);
+                forces.get(nbB.id).add(torqueB);
+              }
+            }
+          }
+        }
+      }
+
+      // Apply forces with damping
+      const damping = 0.40;
+      nodeList.forEach(node => {
+        // Do not move the atom if currently being dragged by user
+        if (this.isDraggingAtom && this.draggedAtom && this.draggedAtom.id === node.id) return;
+
+        const f = forces.get(node.id);
+        if (f) {
+          f.multiplyScalar(damping);
+          f.clampLength(0, 0.45); // Limit step max speed for stability
+          node.mesh.position.add(f);
+          node.position = [
+            parseFloat(node.mesh.position.x.toFixed(3)),
+            parseFloat(node.mesh.position.y.toFixed(3)),
+            parseFloat(node.mesh.position.z.toFixed(3))
+          ];
+          if (node.haloMesh) node.haloMesh.position.copy(node.mesh.position);
+          this._updateConnectedBonds(node.id);
+        }
+      });
+    }
+
+    _triggerValencyAlert(msg) {
+      if (typeof this.onValencyAlert === 'function') {
+        this.onValencyAlert(msg);
+      } else {
+        console.warn('[AtomicBuilder3D]', msg);
+      }
+      if (window.audio && typeof window.audio.playUnreactive === 'function') {
+        window.audio.playUnreactive();
+      }
+    }
+
+    // Data Output: Generates live JSON molecular graph object for chemical database matching
+    getMolecularGraph() {
+      const nodes = Array.from(this.nodes.values()).map(n => ({
+        id: n.id,
+        symbol: n.symbol,
+        pos: [
+          parseFloat(n.mesh.position.x.toFixed(3)),
+          parseFloat(n.mesh.position.y.toFixed(3)),
+          parseFloat(n.mesh.position.z.toFixed(3))
+        ]
+      }));
+
+      const edges = Array.from(this.edges.values()).map(e => ({
+        source: e.sourceId,
+        target: e.targetId,
+        order: e.order || 1
+      }));
+
+      return { nodes, edges };
+    }
+
+    // Matcher: Connects live graph with Periodic Forge chemical registry
+    identifyCurrentMolecule() {
+      if (this.nodes.size === 0) {
+        return { isCompound: false, name: 'Empty Canvas', formula: '—', atomsCount: 0, bondsCount: 0 };
+      }
+
+      // Count elemental composition
+      const composition = {};
+      this.nodes.forEach(n => {
+        composition[n.symbol] = (composition[n.symbol] || 0) + 1;
+      });
+
+      // Check if molecule is connected (all atoms in 1 single connected component)
+      const isConnected = this._isGraphConnected();
+
+      let matchedCompound = null;
+      if (typeof window.makeCompositionKey === 'function' && window.COMPOSITION_LOOKUP) {
+        const compKey = window.makeCompositionKey(composition);
+        if (window.COMPOSITION_LOOKUP.has(compKey)) {
+          const matchedKey = window.COMPOSITION_LOOKUP.get(compKey);
+          matchedCompound = (window.ACTIVE_COMPOUNDS && window.ACTIVE_COMPOUNDS[matchedKey]) || null;
+        }
+      }
+
+      // Formula string builder (Hill system: C first, H second, then alphabetical)
+      const elements = Object.keys(composition);
+      elements.sort((a, b) => {
+        if (a === 'C' && b !== 'C') return -1;
+        if (b === 'C' && a !== 'C') return 1;
+        if (a === 'H' && b !== 'H') return -1;
+        if (b === 'H' && a !== 'H') return 1;
+        return a.localeCompare(b);
+      });
+      const formulaString = elements.map(el => `${el}${composition[el] > 1 ? composition[el] : ''}`).join('');
+
+      // Single unbonded element
+      if (this.nodes.size === 1) {
+        const sym = this.nodes.values().next().value.symbol;
+        const elName = (window.ELEMENT_MAP && window.ELEMENT_MAP.has(sym)) ? window.ELEMENT_MAP.get(sym).name : sym;
+        return {
+          isCompound: false,
+          isElement: true,
+          elementKey: sym,
+          name: elName,
+          formula: sym,
+          composition,
+          atomsCount: 1,
+          bondsCount: 0,
+          isConnected: true
+        };
+      }
+
+      return {
+        isCompound: !!(matchedCompound && isConnected),
+        compoundData: matchedCompound,
+        formula: formulaString,
+        composition,
+        atomsCount: this.nodes.size,
+        bondsCount: this.edges.size,
+        isConnected: isConnected
+      };
+    }
+
+    _isGraphConnected() {
+      if (this.nodes.size <= 1) return true;
+      const visited = new Set();
+      const nodeIds = Array.from(this.nodes.keys());
+      const queue = [nodeIds[0]];
+      visited.add(nodeIds[0]);
+
+      while (queue.length > 0) {
+        const currId = queue.shift();
+        const atom = this.nodes.get(currId);
+        if (!atom) continue;
+
+        for (const edgeId of atom.bonds) {
+          const edge = this.edges.get(edgeId);
+          if (!edge) continue;
+          const neighborId = (edge.sourceId === currId) ? edge.targetId : edge.sourceId;
+          if (!visited.has(neighborId)) {
+            visited.add(neighborId);
+            queue.push(neighborId);
+          }
+        }
+      }
+
+      return visited.size === this.nodes.size;
+    }
+
+    _emitGraphUpdate() {
+      const graph = this.getMolecularGraph();
+      const detection = this.identifyCurrentMolecule();
+
+      window.dispatchEvent(new CustomEvent('atomic-builder-graph-change', {
+        detail: { graph, detection }
+      }));
+
+      if (typeof this.onGraphUpdate === 'function') {
+        this.onGraphUpdate(graph, detection);
+      }
+    }
+
+    clearWorkspace() {
+      this.deselectAtom();
+      this._deselectBondAtom();
+      this._hideMagnetGuide();
+
+      this.edges.forEach(e => {
+        if (e.meshGroup) {
+          this._clearGroupChildren(e.meshGroup);
+          this.bondsGroup.remove(e.meshGroup);
+        }
+      });
+      this.nodes.forEach(n => this.atomsGroup.remove(n.mesh));
+      this.edges.clear();
+      this.nodes.clear();
+      this.atomCounter = 1;
+      this.edgeCounter = 1;
+
+      if (window.audio && typeof window.audio.playClear === 'function') {
+        window.audio.playClear();
+      }
+
+      this._emitGraphUpdate();
+    }
+
+    resetCamera() {
+      if (this.controls) {
+        this.controls.reset();
+        this.camera.position.set(0, 4.5, 12);
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+      }
+    }
+
+    resize() {
+      if (!this.renderer || !this.camera || !this.canvas || !this.container) return;
+      const rect = this.container.getBoundingClientRect();
+      const width = Math.max(10, Math.floor(rect.width || this.canvas.clientWidth || 800));
+      const height = Math.max(10, Math.floor(rect.height || this.canvas.clientHeight || 600));
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+
+      this.renderer.setPixelRatio(pixelRatio);
+      this.renderer.setSize(width, height, false);
+    }
+
+    start() {
+      if (this.animFrameId) return;
+      const animate = () => {
+        this.animFrameId = requestAnimationFrame(animate);
+        this.time += 0.016;
+
+        if (this.controls && this.controls.enabled) {
+          this.controls.update();
+        }
+
+        // Run VSEPR molecular relaxation step if active
+        if (this.isRelaxing) {
+          this._stepRelaxationPhysics();
+        }
+
+        // Pulse selection halo
+        if (this.selectionHalo && this.selectionHalo.visible) {
+          this.selectionHalo.rotation.z += 0.02;
+          const pulse = 1 + Math.sin(this.time * 6) * 0.08;
+          if (this.selectedAtom) {
+            this.selectionHalo.scale.setScalar(this.selectedAtom.radius * 1.45 * pulse);
+          }
+        }
+
+        // Pulse magnetic guidance beam if active
+        if (this.magnetGuideMesh && this.magnetGuideMesh.visible) {
+          const beamPulse = 0.55 + Math.sin(this.time * 12) * 0.25;
+          this.magnetGuideMesh.material.opacity = beamPulse;
+        }
+
+        if (this.renderer && this.scene && this.camera) {
+          this.renderer.render(this.scene, this.camera);
+        }
+      };
+      animate();
+    }
+
+    stop() {
+      if (this.animFrameId) {
+        cancelAnimationFrame(this.animFrameId);
+        this.animFrameId = null;
+      }
+    }
+
+    destroy() {
+      this.stop();
+      this.clearWorkspace();
+      if (this.renderer) this.renderer.dispose();
+    }
+  }
+
+  AtomicBuilder3D.VALENCY_LIMITS = VALENCY_LIMITS;
+  AtomicBuilder3D.BUILDER_CPK = BUILDER_CPK;
+  AtomicBuilder3D.ATOM_RADII = ATOM_RADII;
+  AtomicBuilder3D.COVALENT_RADII = COVALENT_RADII;
+
+  return AtomicBuilder3D;
+}));
+
+  </script>
+  <script>
+/**
  * Periodic Forge: Compound Craft - Realistic 3D Molecule & Element Viewer (Three.js Engine)
  * Features:
  *  - Three.js MeshPhysicalMaterial with authentic roughness, metalness, clearcoat & specular highlights
@@ -7412,11 +9811,13 @@ class MoleculeViewer3D {
       this.moleculeGroup.add(sphere);
     });
 
-    // 2. Build 3D Cylindrical Bonds (Two-tone CPK split cylinders)
-    const bondRadius = 0.095;
+    // 2. Build 3D Cylindrical Bonds (Realistic Single, Double, and Triple Parallel Cylinders)
     const yAxis = new THREE.Vector3(0, 1, 0);
 
-    this.bonds.forEach(([i, j]) => {
+    this.bonds.forEach((bond) => {
+      const i = bond[0];
+      const j = bond[1];
+      const order = bond[2] || 1;
       if (!worldPositions[i] || !worldPositions[j]) return;
       const posA = worldPositions[i];
       const posB = worldPositions[j];
@@ -7431,28 +9832,56 @@ class MoleculeViewer3D {
       const quat = new THREE.Quaternion().setFromUnitVectors(yAxis, dir);
       const halfDist = dist / 2;
 
-      // Half-cylinder 1 (Atom A color)
-      const midPoint = new THREE.Vector3().addVectors(posA, posB).multiplyScalar(0.5);
-      const centerA = new THREE.Vector3().addVectors(posA, midPoint).multiplyScalar(0.5);
-      const geomA = this._getCylinderGeometry(bondRadius, halfDist);
-      const matA = this._getAtomMaterial(atomA.symbol);
-      const meshA = new THREE.Mesh(geomA, matA);
-      meshA.position.copy(centerA);
-      meshA.quaternion.copy(quat);
-      meshA.castShadow = true;
-      meshA.receiveShadow = true;
-      this.moleculeGroup.add(meshA);
+      // Determine lateral cylinder offsets and radius based on bond order
+      let offsets = [];
+      let cylRadius = 0.080;
+      if (order === 1) {
+        offsets = [{ x: 0, z: 0 }];
+      } else if (order === 2) {
+        const off = 0.095;
+        offsets = [{ x: -off, z: 0 }, { x: off, z: 0 }];
+        cylRadius = 0.062;
+      } else if (order >= 3) {
+        const r = 0.105;
+        offsets = [
+          { x: 0, z: r },
+          { x: r * Math.cos(Math.PI / 6), z: -r * Math.sin(Math.PI / 6) },
+          { x: -r * Math.cos(Math.PI / 6), z: -r * Math.sin(Math.PI / 6) }
+        ];
+        cylRadius = 0.052;
+      }
 
-      // Half-cylinder 2 (Atom B color)
-      const centerB = new THREE.Vector3().addVectors(midPoint, posB).multiplyScalar(0.5);
-      const geomB = this._getCylinderGeometry(bondRadius, halfDist);
+      // Orthogonal vectors for lateral offset displacement
+      const arbitrary = Math.abs(dir.y) < 0.99 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+      const perpX = new THREE.Vector3().crossVectors(dir, arbitrary).normalize();
+      const perpZ = new THREE.Vector3().crossVectors(dir, perpX).normalize();
+
+      const matA = this._getAtomMaterial(atomA.symbol);
       const matB = this._getAtomMaterial(atomB.symbol);
-      const meshB = new THREE.Mesh(geomB, matB);
-      meshB.position.copy(centerB);
-      meshB.quaternion.copy(quat);
-      meshB.castShadow = true;
-      meshB.receiveShadow = true;
-      this.moleculeGroup.add(meshB);
+      const geom = this._getCylinderGeometry(cylRadius, halfDist);
+
+      offsets.forEach(off => {
+        const latOffset = perpX.clone().multiplyScalar(off.x).add(perpZ.clone().multiplyScalar(off.z));
+        const midPoint = new THREE.Vector3().addVectors(posA, posB).multiplyScalar(0.5).add(latOffset);
+        const centerA = new THREE.Vector3().addVectors(posA.clone().add(latOffset), midPoint).multiplyScalar(0.5);
+        const centerB = new THREE.Vector3().addVectors(midPoint, posB.clone().add(latOffset)).multiplyScalar(0.5);
+
+        // Half-cylinder 1 (Atom A color)
+        const meshA = new THREE.Mesh(geom, matA);
+        meshA.position.copy(centerA);
+        meshA.quaternion.copy(quat);
+        meshA.castShadow = true;
+        meshA.receiveShadow = true;
+        this.moleculeGroup.add(meshA);
+
+        // Half-cylinder 2 (Atom B color)
+        const meshB = new THREE.Mesh(geom, matB);
+        meshB.position.copy(centerB);
+        meshB.quaternion.copy(quat);
+        meshB.castShadow = true;
+        meshB.receiveShadow = true;
+        this.moleculeGroup.add(meshB);
+      });
     });
 
     // 3. Special Single-Element Atom Quantum Orbital Mode
@@ -7634,31 +10063,31 @@ function getMolecularStructureData(key) {
 
   // 1. Curated exact 3D models for iconic and complex chemical substances
   const CURATED_MODELS = {
-    // Water (Bent, 104.5 deg)
+    // Water (Bent, 104.5 deg, realistic 0.96 Angstrom bond length)
     'H2O': {
       atoms: [
-        { symbol: 'O', x: 0, y: -10, z: 0 },
+        { symbol: 'O', x: 0, y: 0, z: 0 },
         { symbol: 'H', x: -0.757 * S, y: 0.586 * S, z: 0 },
         { symbol: 'H', x: 0.757 * S, y: 0.586 * S, z: 0 }
       ],
-      bonds: [[0, 1], [0, 2]]
+      bonds: [[0, 1, 1], [0, 2, 1]]
     },
-    // Carbon Dioxide (Linear, 180 deg)
+    // Carbon Dioxide (Linear, 180 deg, Double Bonds C=O)
     'CO2': {
       atoms: [
         { symbol: 'C', x: 0, y: 0, z: 0 },
         { symbol: 'O', x: -1.16 * S, y: 0, z: 0 },
         { symbol: 'O', x: 1.16 * S, y: 0, z: 0 }
       ],
-      bonds: [[0, 1], [0, 2]]
+      bonds: [[0, 1, 2], [0, 2, 2]]
     },
-    // Carbon Monoxide (Linear)
+    // Carbon Monoxide (Linear, Triple Bond C#O)
     'CO': {
       atoms: [
         { symbol: 'C', x: -0.56 * S, y: 0, z: 0 },
         { symbol: 'O', x: 0.56 * S, y: 0, z: 0 }
       ],
-      bonds: [[0, 1]]
+      bonds: [[0, 1, 3]]
     },
     // Hydrogen Peroxide (Skewed non-planar)
     'H2O2': {
@@ -7722,8 +10151,8 @@ function getMolecularStructureData(key) {
         { symbol: 'H', x: 1.24 * S, y: -2.15 * S, z: 0 }
       ],
       bonds: [
-        [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0],
-        [0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]
+        [0, 1, 2], [1, 2, 1], [2, 3, 2], [3, 4, 1], [4, 5, 2], [5, 0, 1],
+        [0, 6, 1], [1, 7, 1], [2, 8, 1], [3, 9, 1], [4, 10, 1], [5, 11, 1]
       ]
     },
     // Table Salt (NaCl Cubic Crystal Lattice Unit)
@@ -8057,16 +10486,19 @@ function generateProceduralMolecularStructure(key, S) {
     const bonds = [];
 
     if (count === 2) {
+      let order = 1;
+      if (sym === 'O') order = 2; // O=O double bond
+      if (sym === 'N') order = 3; // N#N triple bond
       atoms.push({ symbol: sym, x: -0.7 * S, y: 0, z: 0, color, radius: rad });
       atoms.push({ symbol: sym, x: 0.7 * S, y: 0, z: 0, color, radius: rad });
-      bonds.push([0, 1]);
+      bonds.push([0, 1, order]);
     } else if (count === 6 && sym === 'C') {
-      // 6-carbon aromatic benzene ring
+      // 6-carbon aromatic benzene ring with alternating double bonds
       const r = 1.39 * S;
       for (let i = 0; i < 6; i++) {
         const a = (i * 60) * Math.PI / 180;
         atoms.push({ symbol: 'C', x: r * Math.cos(a), y: r * Math.sin(a), z: 0, color, radius: rad });
-        bonds.push([i, (i + 1) % 6]);
+        bonds.push([i, (i + 1) % 6, (i % 2 === 0 ? 2 : 1)]);
       }
     } else {
       // Crown or circular ring (e.g. S8, P4)
@@ -8075,7 +10507,7 @@ function generateProceduralMolecularStructure(key, S) {
         const a = (i * 2 * Math.PI) / count;
         const z = (i % 2 === 0) ? 0.22 * S : -0.22 * S;
         atoms.push({ symbol: sym, x: ringRadius * Math.cos(a), y: ringRadius * Math.sin(a), z, color, radius: rad });
-        bonds.push([i, (i + 1) % count]);
+        bonds.push([i, (i + 1) % count, 1]);
       }
     }
     return { atoms, bonds };
@@ -8088,10 +10520,10 @@ function generateProceduralMolecularStructure(key, S) {
   const bonds = [];
   const valenceUsed = [];
 
-  function addBond(i, j) {
-    bonds.push([i, j]);
-    valenceUsed[i] = (valenceUsed[i] || 0) + 1;
-    valenceUsed[j] = (valenceUsed[j] || 0) + 1;
+  function addBond(i, j, order = 1) {
+    bonds.push([i, j, order]);
+    valenceUsed[i] = (valenceUsed[i] || 0) + order;
+    valenceUsed[j] = (valenceUsed[j] || 0) + order;
   }
 
   const MAX_VALENCE = {
@@ -8198,7 +10630,11 @@ function generateProceduralMolecularStructure(key, S) {
         radius: ATOM_RADII[sym] || 15
       });
       valenceUsed[idx] = 0;
-      addBond(targetC, idx);
+      let bondOrd = 1;
+      if (sym === 'O' && (valenceUsed[targetC] || 0) <= 2 && remainingH <= carbonIndices.length) {
+        bondOrd = 2; // Carbonyl C=O double bond
+      }
+      addBond(targetC, idx, bondOrd);
     });
 
     // Cap with Hydrogens respecting each atom's max valence
@@ -8655,7 +11091,41 @@ const DOM = {
   discoveryHost: document.getElementById('discovery-toast-host'),
   resetModal: document.getElementById('reset-modal'),
   cancelResetBtn: document.getElementById('cancel-reset-btn'),
-  confirmResetBtn: document.getElementById('confirm-reset-btn')
+  confirmResetBtn: document.getElementById('confirm-reset-btn'),
+
+  // Workspace Mode Switcher & 3D Atomic Builder
+  workspaceModeSwitch: document.getElementById('workspace-mode-switch'),
+  modeElementBoxesBtn: document.getElementById('mode-element-boxes-btn'),
+  modeAtomicBuilderBtn: document.getElementById('mode-atomic-builder-btn'),
+  atomicBuilderViewport: document.getElementById('atomic-builder-viewport'),
+  atomicBuilderCanvas: document.getElementById('atomic-builder-canvas'),
+  atomicSpawnPalette: document.getElementById('atomic-spawn-palette'),
+  atomicCategoryTabs: document.getElementById('atomic-category-tabs'),
+  builderOpenAllBtn: document.getElementById('builder-open-all-btn'),
+  builderBondModeBtn: document.getElementById('builder-bond-mode-btn'),
+  builderResetCamBtn: document.getElementById('builder-reset-cam-btn'),
+  builderRelaxBtn: document.getElementById('builder-relax-btn'),
+  builderClearBtn: document.getElementById('builder-clear-btn'),
+  builderToggleJsonBtn: document.getElementById('builder-toggle-json-btn'),
+  canvasFloatingClearBtn: document.getElementById('canvas-floating-clear-btn'),
+  canvasFloatingRelaxBtn: document.getElementById('canvas-floating-relax-btn'),
+  canvasFloatingCenterBtn: document.getElementById('canvas-floating-center-btn'),
+  inspectorClearBtn: document.getElementById('inspector-clear-btn'),
+  inspectorCounts: document.getElementById('inspector-counts'),
+  inspectorFormula: document.getElementById('inspector-formula'),
+  inspectorMatchBadge: document.getElementById('inspector-match-badge'),
+  inspectorName: document.getElementById('inspector-name'),
+  inspectorForgeBtn: document.getElementById('inspector-forge-btn'),
+  inspectorJsonDrawer: document.getElementById('inspector-json-drawer'),
+  inspectorCopyJsonBtn: document.getElementById('inspector-copy-json-btn'),
+  inspectorJsonOutput: document.getElementById('inspector-json-output'),
+  builderValencyAlert: document.getElementById('builder-valency-alert'),
+  periodicTableModal: document.getElementById('periodic-table-modal'),
+  closePeriodicModalBtn: document.getElementById('close-periodic-modal-btn'),
+  periodicPickerSearch: document.getElementById('periodic-picker-search'),
+  periodicPickerClearSearch: document.getElementById('periodic-picker-clear-search'),
+  periodicPickerFilterChips: document.getElementById('periodic-picker-filter-chips'),
+  periodicPickerGrid: document.getElementById('periodic-picker-grid')
 };
 
 function refreshDOMReferences() {
@@ -8753,10 +11223,177 @@ function refreshDOMReferences() {
   DOM.resetModal = document.getElementById('reset-modal');
   DOM.cancelResetBtn = document.getElementById('cancel-reset-btn');
   DOM.confirmResetBtn = document.getElementById('confirm-reset-btn');
+
+  // 3D Atomic Builder Elements
+  DOM.workspaceModeSwitch = document.getElementById('workspace-mode-switch');
+  DOM.modeElementBoxesBtn = document.getElementById('mode-element-boxes-btn');
+  DOM.modeAtomicBuilderBtn = document.getElementById('mode-atomic-builder-btn');
+  DOM.atomicBuilderViewport = document.getElementById('atomic-builder-viewport');
+  DOM.atomicBuilderCanvas = document.getElementById('atomic-builder-canvas');
+  DOM.atomicSpawnPalette = document.getElementById('atomic-spawn-palette');
+  DOM.atomicCategoryTabs = document.getElementById('atomic-category-tabs');
+  DOM.builderOpenAllBtn = document.getElementById('builder-open-all-btn');
+  DOM.builderBondModeBtn = document.getElementById('builder-bond-mode-btn');
+  DOM.builderResetCamBtn = document.getElementById('builder-reset-cam-btn');
+  DOM.builderRelaxBtn = document.getElementById('builder-relax-btn');
+  DOM.builderClearBtn = document.getElementById('builder-clear-btn');
+  DOM.builderToggleJsonBtn = document.getElementById('builder-toggle-json-btn');
+  DOM.canvasFloatingClearBtn = document.getElementById('canvas-floating-clear-btn');
+  DOM.canvasFloatingRelaxBtn = document.getElementById('canvas-floating-relax-btn');
+  DOM.canvasFloatingCenterBtn = document.getElementById('canvas-floating-center-btn');
+  DOM.inspectorClearBtn = document.getElementById('inspector-clear-btn');
+  DOM.inspectorCounts = document.getElementById('inspector-counts');
+  DOM.inspectorFormula = document.getElementById('inspector-formula');
+  DOM.inspectorMatchBadge = document.getElementById('inspector-match-badge');
+  DOM.inspectorName = document.getElementById('inspector-name');
+  DOM.inspectorForgeBtn = document.getElementById('inspector-forge-btn');
+  DOM.inspectorJsonDrawer = document.getElementById('inspector-json-drawer');
+  DOM.inspectorCopyJsonBtn = document.getElementById('inspector-copy-json-btn');
+  DOM.inspectorJsonOutput = document.getElementById('inspector-json-output');
+  DOM.builderValencyAlert = document.getElementById('builder-valency-alert');
+  DOM.periodicTableModal = document.getElementById('periodic-table-modal');
+  DOM.closePeriodicModalBtn = document.getElementById('close-periodic-modal-btn');
+  DOM.periodicPickerSearch = document.getElementById('periodic-picker-search');
+  DOM.periodicPickerClearSearch = document.getElementById('periodic-picker-clear-search');
+  DOM.periodicPickerFilterChips = document.getElementById('periodic-picker-filter-chips');
+  DOM.periodicPickerGrid = document.getElementById('periodic-picker-grid');
 }
 
 let moleculeViewer = null;
 let currentInspectedKey = null;
+
+// ============================================================================
+// Dual-Mode Workspace Component: Element Boxes & 3D Atomic Builder
+// ============================================================================
+let atomicBuilderInstance = null;
+let activeWorkspaceMode = 'element-boxes'; // 'element-boxes' | 'atomic-builder'
+let lastDetectedCompoundKey = null;
+let valencyToastTimer = null;
+
+function switchWorkspaceMode(mode) {
+  if (mode === activeWorkspaceMode && atomicBuilderInstance) return;
+  activeWorkspaceMode = mode;
+
+  if (mode === 'element-boxes') {
+    if (DOM.modeElementBoxesBtn) {
+      DOM.modeElementBoxesBtn.classList.add('active');
+      DOM.modeElementBoxesBtn.setAttribute('aria-selected', 'true');
+    }
+    if (DOM.modeAtomicBuilderBtn) {
+      DOM.modeAtomicBuilderBtn.classList.remove('active');
+      DOM.modeAtomicBuilderBtn.setAttribute('aria-selected', 'false');
+    }
+    if (DOM.canvasWrapper) DOM.canvasWrapper.style.display = '';
+    if (DOM.atomicBuilderViewport) DOM.atomicBuilderViewport.style.display = 'none';
+    if (DOM.mobileDualDock) DOM.mobileDualDock.style.display = '';
+    if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+  } else if (mode === 'atomic-builder') {
+    if (DOM.modeAtomicBuilderBtn) {
+      DOM.modeAtomicBuilderBtn.classList.add('active');
+      DOM.modeAtomicBuilderBtn.setAttribute('aria-selected', 'true');
+    }
+    if (DOM.modeElementBoxesBtn) {
+      DOM.modeElementBoxesBtn.classList.remove('active');
+      DOM.modeElementBoxesBtn.setAttribute('aria-selected', 'false');
+    }
+    if (DOM.canvasWrapper) DOM.canvasWrapper.style.display = 'none';
+    if (DOM.atomicBuilderViewport) DOM.atomicBuilderViewport.style.display = 'flex';
+    if (DOM.mobileDualDock) DOM.mobileDualDock.style.display = 'none';
+    closeMobileDrawer();
+
+    if (!atomicBuilderInstance && typeof AtomicBuilder3D !== 'undefined') {
+      try {
+        atomicBuilderInstance = new AtomicBuilder3D(DOM.atomicBuilderViewport, DOM.atomicBuilderCanvas);
+        atomicBuilderInstance.onGraphUpdate = (graph, detection) => updateAtomicInspector(graph, detection);
+        atomicBuilderInstance.onValencyAlert = (msg) => showValencyToast(msg);
+        window.atomicBuilderInstance = atomicBuilderInstance;
+      } catch (err) {
+        console.error('[PeriodicForge] Failed to initialize AtomicBuilder3D:', err);
+      }
+    }
+
+    if (atomicBuilderInstance) {
+      requestAnimationFrame(() => {
+        atomicBuilderInstance.resize();
+        const det = atomicBuilderInstance.identifyCurrentMolecule();
+        updateAtomicInspector(atomicBuilderInstance.getMolecularGraph(), det);
+      });
+    }
+
+    if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+  }
+}
+
+function updateAtomicInspector(graph, detection) {
+  if (DOM.inspectorCounts) {
+    const aCount = detection.atomsCount || 0;
+    const bCount = detection.bondsCount || 0;
+    DOM.inspectorCounts.textContent = `${aCount} atom${aCount === 1 ? '' : 's'} • ${bCount} bond${bCount === 1 ? '' : 's'}`;
+  }
+
+  if (DOM.inspectorJsonOutput) {
+    DOM.inspectorJsonOutput.textContent = JSON.stringify(graph, null, 2);
+  }
+
+  if (!DOM.inspectorFormula || !DOM.inspectorName || !DOM.inspectorMatchBadge) return;
+
+  if (detection.atomsCount === 0) {
+    DOM.inspectorFormula.textContent = '—';
+    DOM.inspectorMatchBadge.textContent = 'Empty Viewport';
+    DOM.inspectorMatchBadge.className = 'match-badge';
+    DOM.inspectorName.textContent = 'Drag atoms from the top bar to begin assembling';
+    if (DOM.inspectorForgeBtn) DOM.inspectorForgeBtn.style.display = 'none';
+    lastDetectedCompoundKey = null;
+  } else if (detection.isElement) {
+    DOM.inspectorFormula.textContent = detection.formula;
+    DOM.inspectorMatchBadge.textContent = 'Elemental';
+    DOM.inspectorMatchBadge.className = 'match-badge match-found';
+    DOM.inspectorName.textContent = `${detection.name} (Unbonded Element)`;
+    if (DOM.inspectorForgeBtn) DOM.inspectorForgeBtn.style.display = 'none';
+    lastDetectedCompoundKey = null;
+  } else if (detection.isCompound && detection.compoundData) {
+    const comp = detection.compoundData;
+    DOM.inspectorFormula.textContent = comp.formula || detection.formula;
+    DOM.inspectorName.textContent = `${comp.emoji || '⚗️'} ${comp.name}`;
+    const alreadyDiscovered = appState.discoveredCompounds.has(comp.key);
+    if (alreadyDiscovered) {
+      DOM.inspectorMatchBadge.textContent = 'Discovered';
+      DOM.inspectorMatchBadge.className = 'match-badge match-found';
+      if (DOM.inspectorForgeBtn) {
+        DOM.inspectorForgeBtn.style.display = 'inline-flex';
+        DOM.inspectorForgeBtn.textContent = '✨ Spawn to Board';
+      }
+    } else {
+      DOM.inspectorMatchBadge.textContent = 'NEW COMPOUND!';
+      DOM.inspectorMatchBadge.className = 'match-badge match-new';
+      if (DOM.inspectorForgeBtn) {
+        DOM.inspectorForgeBtn.style.display = 'inline-flex';
+        DOM.inspectorForgeBtn.textContent = '✨ Forge & Unlock';
+      }
+    }
+    lastDetectedCompoundKey = comp.key;
+  } else {
+    DOM.inspectorFormula.textContent = detection.formula || '—';
+    DOM.inspectorMatchBadge.textContent = detection.isConnected ? 'Unregistered Molecule' : 'Unconnected Fragments';
+    DOM.inspectorMatchBadge.className = 'match-badge match-unregistered';
+    DOM.inspectorName.textContent = detection.isConnected
+      ? 'Structure valid, but formula is not in compound registry'
+      : 'Connect all atoms with bonds to form a single molecule';
+    if (DOM.inspectorForgeBtn) DOM.inspectorForgeBtn.style.display = 'none';
+    lastDetectedCompoundKey = null;
+  }
+}
+
+function showValencyToast(msg) {
+  if (!DOM.builderValencyAlert) return;
+  if (valencyToastTimer) clearTimeout(valencyToastTimer);
+  DOM.builderValencyAlert.textContent = msg;
+  DOM.builderValencyAlert.classList.add('visible');
+  if (window.audio && typeof window.audio.playError === 'function') window.audio.playError();
+  valencyToastTimer = setTimeout(() => {
+    DOM.builderValencyAlert?.classList.remove('visible');
+  }, 3500);
+}
 
 // ============================================================================
 // Adaptive Dual-Interface Mode Engine & Drawer Controls
@@ -9957,7 +12594,7 @@ function openCompoundDossier(key) {
 
   currentInspectedKey = key;
 
-  if (DOM.dossierEmoji) DOM.dossierEmoji.textContent = dossier.emoji || "\u2697";
+  if (DOM.dossierEmoji) DOM.dossierEmoji.innerHTML = dossier.emoji || "\u2697";
   if (DOM.dossierFormula) DOM.dossierFormula.innerHTML = dossier.formula;
   if (DOM.dossierCategory) DOM.dossierCategory.textContent = dossier.category || 'Compound';
   if (DOM.dossierName) DOM.dossierName.textContent = dossier.name;
@@ -10498,6 +13135,278 @@ function initListeners() {
     });
   }
 
+  // 3D Atomic Builder Workspace Mode Listeners
+  if (DOM.modeElementBoxesBtn) {
+    DOM.modeElementBoxesBtn.addEventListener('click', () => switchWorkspaceMode('element-boxes'));
+  }
+  if (DOM.modeAtomicBuilderBtn) {
+    DOM.modeAtomicBuilderBtn.addEventListener('click', () => switchWorkspaceMode('atomic-builder'));
+  }
+
+  // Quick Element Categories for 3D Builder Toolbar
+  const BUILDER_CATEGORIES = {
+    organics: ['H', 'C', 'N', 'O', 'P', 'S', 'F', 'Cl', 'Br', 'I'],
+    metals: ['Na', 'K', 'Ca', 'Mg', 'Fe', 'Cu', 'Zn', 'Al', 'Ag', 'Au', 'Pt', 'Pb'],
+    'halogens-noble': ['He', 'Ne', 'Ar', 'Kr', 'Xe', 'F', 'Cl', 'Br', 'I'],
+    common: ['H', 'C', 'N', 'O', 'Na', 'Cl', 'Fe', 'Cu', 'Au', 'Ag', 'Ca', 'S']
+  };
+
+  function renderBuilderSpawnPalette(catKey) {
+    if (!DOM.atomicSpawnPalette) return;
+    const symbols = BUILDER_CATEGORIES[catKey] || BUILDER_CATEGORIES.organics;
+    DOM.atomicSpawnPalette.innerHTML = '';
+
+    symbols.forEach(sym => {
+      const el = (window.ELEMENT_MAP && window.ELEMENT_MAP.has(sym)) ? window.ELEMENT_MAP.get(sym) : null;
+      const val = (window.AtomicBuilder3D && window.AtomicBuilder3D.VALENCY_LIMITS && (sym in window.AtomicBuilder3D.VALENCY_LIMITS))
+        ? window.AtomicBuilder3D.VALENCY_LIMITS[sym]
+        : (el && el.valence ? Math.max(...el.valence.map(v => Math.abs(v))) : 1);
+      const name = el ? el.name : sym;
+
+      const chip = document.createElement('button');
+      chip.className = 'atomic-spawn-chip';
+      chip.setAttribute('data-symbol', sym);
+      chip.title = `${name} (Valency: ${val})`;
+
+      const dotClass = `atom-dot-${sym.toLowerCase()}`;
+      chip.innerHTML = `
+        <span class="atom-dot ${dotClass}"></span>
+        <span class="atom-sym">${sym}</span>
+        <span class="atom-val">${val}</span>
+      `;
+
+      chip.addEventListener('click', () => {
+        if (atomicBuilderInstance) {
+          atomicBuilderInstance.spawnAtom(sym);
+        }
+      });
+
+      DOM.atomicSpawnPalette.appendChild(chip);
+    });
+  }
+
+  // Builder Category Tab Switcher
+  if (DOM.atomicCategoryTabs) {
+    DOM.atomicCategoryTabs.querySelectorAll('.atomic-cat-tab[data-cat]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        DOM.atomicCategoryTabs.querySelectorAll('.atomic-cat-tab[data-cat]').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const cat = tab.getAttribute('data-cat');
+        renderBuilderSpawnPalette(cat);
+        if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+      });
+    });
+  }
+
+  // Initial render of default Organics palette
+  renderBuilderSpawnPalette('organics');
+
+  // Full 118-Element Periodic Table Modal Management
+  function openPeriodicModal() {
+    if (!DOM.periodicTableModal) return;
+    DOM.periodicTableModal.style.display = 'flex';
+    DOM.periodicTableModal.classList.add('is-open');
+    renderPeriodicGrid();
+    if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+  }
+
+  function closePeriodicModal() {
+    if (!DOM.periodicTableModal) return;
+    DOM.periodicTableModal.classList.remove('is-open');
+    DOM.periodicTableModal.style.display = 'none';
+  }
+
+  if (DOM.builderOpenAllBtn) {
+    DOM.builderOpenAllBtn.addEventListener('click', openPeriodicModal);
+  }
+  if (DOM.closePeriodicModalBtn) {
+    DOM.closePeriodicModalBtn.addEventListener('click', closePeriodicModal);
+  }
+  if (DOM.periodicTableModal) {
+    DOM.periodicTableModal.addEventListener('click', (e) => {
+      if (e.target === DOM.periodicTableModal) closePeriodicModal();
+    });
+  }
+
+  // Periodic Table Modal Filter and Search
+  let activePeriodicCategoryFilter = 'all';
+  let periodicSearchQuery = '';
+
+  function renderPeriodicGrid() {
+    if (!DOM.periodicPickerGrid || typeof PERIODIC_ELEMENTS === 'undefined') return;
+    DOM.periodicPickerGrid.innerHTML = '';
+
+    const query = periodicSearchQuery.trim().toLowerCase();
+    const filtered = PERIODIC_ELEMENTS.filter(el => {
+      // Category match
+      if (activePeriodicCategoryFilter !== 'all' && el.group !== activePeriodicCategoryFilter) {
+        return false;
+      }
+      // Search match
+      if (query) {
+        const matchesName = el.name.toLowerCase().includes(query);
+        const matchesSym = el.symbol.toLowerCase() === query || el.symbol.toLowerCase().startsWith(query);
+        const matchesNum = el.atomic.toString() === query;
+        if (!matchesName && !matchesSym && !matchesNum) return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      DOM.periodicPickerGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 1.5rem;">No elements found matching "${query}"</div>`;
+      return;
+    }
+
+    filtered.forEach(el => {
+      const card = document.createElement('div');
+      card.className = 'periodic-grid-card';
+      const maxVal = (window.AtomicBuilder3D && window.AtomicBuilder3D.VALENCY_LIMITS && (el.symbol in window.AtomicBuilder3D.VALENCY_LIMITS))
+        ? window.AtomicBuilder3D.VALENCY_LIMITS[el.symbol]
+        : (el.valence ? Math.max(...el.valence.map(v => Math.abs(v))) : 1);
+      card.title = `${el.name} (#${el.atomic}) - Valency: ${maxVal} (${el.group})`;
+
+      card.innerHTML = `
+        <span class="card-atomic-num">${el.atomic}</span>
+        <span class="card-symbol">${el.symbol}</span>
+        <span class="card-name">${el.name}</span>
+        <span class="card-val-pill">V: ${maxVal}</span>
+      `;
+
+      card.addEventListener('click', () => {
+        if (atomicBuilderInstance) {
+          atomicBuilderInstance.spawnAtom(el.symbol);
+        }
+        closePeriodicModal();
+      });
+
+      DOM.periodicPickerGrid.appendChild(card);
+    });
+  }
+
+  if (DOM.periodicPickerSearch) {
+    DOM.periodicPickerSearch.addEventListener('input', (e) => {
+      periodicSearchQuery = e.target.value;
+      renderPeriodicGrid();
+    });
+  }
+  if (DOM.periodicPickerClearSearch) {
+    DOM.periodicPickerClearSearch.addEventListener('click', () => {
+      if (DOM.periodicPickerSearch) DOM.periodicPickerSearch.value = '';
+      periodicSearchQuery = '';
+      renderPeriodicGrid();
+    });
+  }
+
+  if (DOM.periodicPickerFilterChips) {
+    DOM.periodicPickerFilterChips.querySelectorAll('.picker-filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        DOM.periodicPickerFilterChips.querySelectorAll('.picker-filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activePeriodicCategoryFilter = chip.getAttribute('data-filter') || 'all';
+        renderPeriodicGrid();
+        if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+      });
+    });
+  }
+
+  // Bond Mode Toggle
+  if (DOM.builderBondModeBtn) {
+    DOM.builderBondModeBtn.addEventListener('click', () => {
+      if (!atomicBuilderInstance) return;
+      const isBond = atomicBuilderInstance.toggleBondMode();
+      DOM.builderBondModeBtn.classList.toggle('active', isBond);
+      const textSpan = DOM.builderBondModeBtn.querySelector('.tool-btn-text');
+      if (textSpan) textSpan.textContent = isBond ? 'Click-Bond: ON' : 'Auto-Bond: ON';
+    });
+  }
+
+  // Reset Camera View & Center Structure (Toolbar & Floating)
+  if (DOM.builderResetCamBtn) {
+    DOM.builderResetCamBtn.addEventListener('click', () => atomicBuilderInstance?.resetCamera());
+  }
+  if (DOM.canvasFloatingCenterBtn) {
+    DOM.canvasFloatingCenterBtn.addEventListener('click', () => atomicBuilderInstance?.resetCamera());
+  }
+
+  // Relax & Align with VSEPR Physics (Toolbar & Floating)
+  if (DOM.builderRelaxBtn) {
+    DOM.builderRelaxBtn.addEventListener('click', () => {
+      atomicBuilderInstance?.relaxMolecularGeometry(50);
+      if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+    });
+  }
+  if (DOM.canvasFloatingRelaxBtn) {
+    DOM.canvasFloatingRelaxBtn.addEventListener('click', () => {
+      atomicBuilderInstance?.relaxMolecularGeometry(50);
+      if (window.audio && typeof window.audio.playPick === 'function') window.audio.playPick();
+    });
+  }
+
+  // Clear 3D Workspace (Top Toolbar, On-Canvas Floating Dock, and Inspector Panel)
+  if (DOM.builderClearBtn) {
+    DOM.builderClearBtn.addEventListener('click', () => atomicBuilderInstance?.clearWorkspace());
+  }
+  if (DOM.canvasFloatingClearBtn) {
+    DOM.canvasFloatingClearBtn.addEventListener('click', () => atomicBuilderInstance?.clearWorkspace());
+  }
+  if (DOM.inspectorClearBtn) {
+    DOM.inspectorClearBtn.addEventListener('click', () => atomicBuilderInstance?.clearWorkspace());
+  }
+
+  // Toggle Molecular Graph JSON Drawer
+  if (DOM.builderToggleJsonBtn) {
+    DOM.builderToggleJsonBtn.addEventListener('click', () => {
+      if (!DOM.inspectorJsonDrawer) return;
+      const isOpen = DOM.inspectorJsonDrawer.style.display !== 'none';
+      DOM.inspectorJsonDrawer.style.display = isOpen ? 'none' : 'block';
+      DOM.builderToggleJsonBtn.classList.toggle('active', !isOpen);
+    });
+  }
+
+  // Copy Graph JSON Button
+  if (DOM.inspectorCopyJsonBtn) {
+    DOM.inspectorCopyJsonBtn.addEventListener('click', async () => {
+      if (!DOM.inspectorJsonOutput) return;
+      try {
+        await navigator.clipboard.writeText(DOM.inspectorJsonOutput.textContent);
+        DOM.inspectorCopyJsonBtn.textContent = '✓ Copied!';
+        setTimeout(() => {
+          if (DOM.inspectorCopyJsonBtn) DOM.inspectorCopyJsonBtn.textContent = '📋 Copy';
+        }, 2000);
+      } catch (_) {}
+    });
+  }
+
+  // Forge Compound Button
+  if (DOM.inspectorForgeBtn) {
+    DOM.inspectorForgeBtn.addEventListener('click', () => {
+      if (!lastDetectedCompoundKey) return;
+      const isFirst = !appState.discoveredCompounds.has(lastDetectedCompoundKey);
+      if (isFirst) {
+        appState.discoveredCompounds.add(lastDetectedCompoundKey);
+        appState.discoveryOrder.push(lastDetectedCompoundKey);
+        appState.saveState();
+        audio.playDiscovery();
+        showDiscoveryToast(getItemDetails(lastDetectedCompoundKey));
+        renderCompoundsBar();
+        updateHeaderStats();
+      } else {
+        audio.playSpawn();
+      }
+
+      // Also spawn card on 2D board at center
+      const boardRect = DOM.canvasBoard?.getBoundingClientRect();
+      const spawnX = boardRect ? (boardRect.width / 2 - 60) : 200;
+      const spawnY = boardRect ? (boardRect.height / 2 - 30) : 200;
+      spawnCardOnCanvas(lastDetectedCompoundKey, spawnX, spawnY);
+
+      if (atomicBuilderInstance) {
+        const det = atomicBuilderInstance.identifyCurrentMolecule();
+        updateAtomicInspector(atomicBuilderInstance.getMolecularGraph(), det);
+      }
+    });
+  }
+
   // Audio gesture initialization
   document.addEventListener('pointerdown', () => audio.init(), { once: true });
 }
@@ -10530,6 +13439,7 @@ function initApp() {
   }
 
   window.appState = appState;
+  window.switchWorkspaceMode = switchWorkspaceMode;
   window.switchInventoryTab = switchInventoryTab;
   window.toggleMobileTray = toggleMobileTray;
   window.openMobileTray = openMobileTray;
@@ -10542,6 +13452,8 @@ function initApp() {
   window.toggleMobileDrawer = toggleMobileDrawer;
   window.openMobileDrawer = openMobileDrawer;
   window.closeMobileDrawer = closeMobileDrawer;
+  window.toggleMobileMenu = toggleMobileMenu;
+  window.closeMobileMenu = closeMobileMenu;
   window.toggleMobileMenu = toggleMobileMenu;
   window.closeMobileMenu = closeMobileMenu;
 
