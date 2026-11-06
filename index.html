@@ -24,71 +24,82 @@
    ========================================================================== */
 
 :root {
-  /* Infinite Craft Signature Theme (Light Default) */
-  --bg-canvas: #fafafa;
-  --bg-grid-dot: rgba(0, 0, 0, 0.12);
-  --bg-sidebar: #ffffff;
-  --bg-sidebar-elevated: #f4f4f5;
+  /* Apple Design Language - Clean Laboratory Aesthetic (Light) */
+  --bg-canvas: #fbfbfd;
+  --bg-grid-dot: rgba(0, 0, 0, 0.09);
+  --bg-sidebar: rgba(255, 255, 255, 0.78);
+  --bg-sidebar-elevated: rgba(245, 245, 247, 0.85);
   --bg-card: #ffffff;
-  --bg-card-hover: #f9fafb;
+  --bg-card-hover: #f5f5f7;
   
-  --border-subtle: #e5e7eb;
-  --border-strong: #d1d5db;
-  --border-card: #e5e7eb;
-  --border-card-hover: #9ca3af;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.16);
+  --border-card: rgba(0, 0, 0, 0.09);
+  --border-card-hover: rgba(0, 0, 0, 0.22);
   
-  --text-primary: #18181b;
-  --text-secondary: #52525b;
-  --text-muted: #71717a;
-  --text-dim: #a1a1aa;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-muted: #86868b;
+  --text-dim: #a1a1a6;
   
-  --accent-cyan: #0284c7;
-  --accent-amber: #d97706;
-  --accent-rose: #e11d48;
-  --accent-emerald: #059669;
-  --accent-purple: #7c3aed;
+  --accent-cyan: #0071e3;    /* Apple System Blue */
+  --accent-amber: #ff9500;   /* Apple System Orange */
+  --accent-rose: #ff3b30;    /* Apple System Red */
+  --accent-emerald: #34c759; /* Apple System Green */
+  --accent-purple: #5856d6;  /* Apple System Indigo */
   
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
-  --shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-  --shadow-dragging: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --frosted-bg: rgba(255, 255, 255, 0.78);
+  --frosted-blur: blur(24px) saturate(180%);
+  --frosted-border: 1px solid rgba(0, 0, 0, 0.08);
+  --frosted-highlight: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.9);
   
-  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-dragging: 0 16px 32px rgba(0, 0, 0, 0.18);
+  
+  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", system-ui, sans-serif;
+  --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, monospace;
   --sidebar-left-width: 250px;
   --sidebar-right-width: 260px;
-  --header-height: 36px;
-  --card-radius: 8px;
+  --header-height: 38px;
+  --card-radius: 7px;
 }
 
-/* Dark Mode (Infinite Craft Dark Theme) */
+/* Dark Mode - High Contrast Apple OLED Laboratory Theme */
 [data-theme="dark"] {
-  --bg-canvas: #121212;
-  --bg-grid-dot: rgba(255, 255, 255, 0.12);
-  --bg-sidebar: #18181b;
-  --bg-sidebar-elevated: #27272a;
-  --bg-card: #27272a;
-  --bg-card-hover: #3f3f46;
+  --bg-canvas: #000000;
+  --bg-grid-dot: rgba(255, 255, 255, 0.14);
+  --bg-sidebar: rgba(28, 28, 30, 0.78);
+  --bg-sidebar-elevated: rgba(44, 44, 46, 0.75);
+  --bg-card: rgba(36, 36, 38, 0.92);
+  --bg-card-hover: rgba(58, 58, 60, 0.95);
   
-  --border-subtle: #27272a;
-  --border-strong: #3f3f46;
-  --border-card: #3f3f46;
-  --border-card-hover: #71717a;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-card: rgba(255, 255, 255, 0.14);
+  --border-card-hover: rgba(255, 255, 255, 0.32);
   
-  --text-primary: #f4f4f5;
-  --text-secondary: #d4d4d8;
-  --text-muted: #a1a1aa;
-  --text-dim: #71717a;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(235, 235, 245, 0.70);
+  --text-muted: rgba(235, 235, 245, 0.45);
+  --text-dim: rgba(235, 235, 245, 0.28);
   
-  --accent-cyan: #38bdf8;
-  --accent-amber: #fbbf24;
-  --accent-rose: #f43f5e;
-  --accent-emerald: #34d399;
-  --accent-purple: #c084fc;
+  --accent-cyan: #0a84ff;    /* Apple Dark System Blue */
+  --accent-amber: #ff9f0a;   /* Apple Dark System Orange */
+  --accent-rose: #ff453a;    /* Apple Dark System Red */
+  --accent-emerald: #30d158; /* Apple Dark System Green */
+  --accent-purple: #5e5ce6;  /* Apple Dark System Indigo */
+  
+  --frosted-bg: rgba(28, 28, 30, 0.78);
+  --frosted-blur: blur(24px) saturate(190%);
+  --frosted-border: 1px solid rgba(255, 255, 255, 0.12);
+  --frosted-highlight: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.15);
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.6);
-  --shadow-dragging: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 0 20px rgba(56, 189, 248, 0.3);
+  --shadow-card: 0 2px 5px rgba(0, 0, 0, 0.4), inset 0 0.5px 0 rgba(255, 255, 255, 0.10);
+  --shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.6);
+  --shadow-dragging: 0 20px 32px rgba(0, 0, 0, 0.75);
 }
 
 *, *::before, *::after {
@@ -107,10 +118,11 @@ html, body {
   color: var(--text-primary);
   font-family: var(--font-main);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.012em;
 }
 
 /* ==========================================================================
-   App Shell & Top Navigation
+   App Shell & Top Navigation (Apple Frosted Glass)
    ========================================================================== */
 .app-shell {
   display: flex;
@@ -126,14 +138,16 @@ html, body {
   height: var(--header-height);
   min-height: var(--header-height);
   max-height: var(--header-height);
-  background: var(--bg-sidebar);
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 0.85rem;
   z-index: 100;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--frosted-highlight);
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -148,15 +162,13 @@ html, body {
 
 .brand-glyph,
 .brand-icon {
-  font-size: 1.15rem;
-  line-height: 1;
-  color: var(--accent-cyan);
+  display: none;
 }
 
 .brand-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   color: var(--text-primary);
 }
 
@@ -177,7 +189,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.72rem;
+  font-size: 0.70rem;
   color: var(--text-muted);
   background: var(--bg-sidebar-elevated);
   border: 1px solid var(--border-subtle);
@@ -189,7 +201,8 @@ html, body {
 .stat-val.highlight,
 .nav-stat-chip strong {
   color: var(--accent-cyan);
-  font-weight: 700;
+  font-weight: 600;
+  font-family: var(--font-mono);
 }
 
 .nav-actions {
@@ -210,7 +223,7 @@ html, body {
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 0.85rem;
-  transition: all 0.15s ease;
+  transition: background-color 0.12s ease;
   padding: 0;
 }
 
@@ -219,19 +232,24 @@ html, body {
   color: var(--text-primary);
 }
 
+.nav-btn:active {
+  transform: scale(0.96);
+}
+
 /* ==========================================================================
-   Dual-Mode Workspace Mode Switcher (Header Segmented Control)
+   Dual-Mode Workspace Mode Switcher (Apple Segmented Capsule)
    ========================================================================== */
 .workspace-mode-switch {
   display: inline-flex;
   align-items: center;
-  background: var(--bg-sidebar-elevated);
+  background: rgba(120, 120, 128, 0.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-subtle);
-  border-radius: 9999px;
+  border-radius: 9px;
   padding: 2px;
   gap: 2px;
   user-select: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
   margin: 0 0.5rem;
 }
 
@@ -239,16 +257,16 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.2rem 0.65rem;
-  border-radius: 9999px;
+  padding: 0.22rem 0.65rem;
+  border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
   font-family: inherit;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.16s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
 }
 
@@ -256,19 +274,23 @@ html, body {
   color: var(--text-primary);
 }
 
+.mode-switch-btn:active {
+  transform: scale(0.97);
+}
+
 .mode-switch-btn.active {
   background: var(--bg-card);
   color: var(--text-primary);
   border-color: var(--border-subtle);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
+  font-weight: 600;
 }
 
 [data-theme="dark"] .mode-switch-btn.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.18);
   color: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
 }
 
 .mode-icon {
@@ -322,7 +344,7 @@ html, body {
   bottom: 0;
 }
 
-/* 3D Atomic Builder Top Glass Toolbar */
+/* 3D Atomic Builder Top Frosted Glass Toolbar */
 .atomic-builder-toolbar {
   position: absolute;
   top: 10px;
@@ -331,16 +353,16 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 247, 250, 0.65) 100%);
-  backdrop-filter: blur(18px) saturate(190%);
-  -webkit-backdrop-filter: blur(18px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  border-radius: 18px;
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
+  border-radius: 14px;
   padding: 0.45rem 0.85rem;
   box-shadow: 
     0 10px 30px -4px rgba(0, 0, 0, 0.08),
     0 4px 12px -2px rgba(0, 0, 0, 0.04),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95);
+    var(--frosted-highlight);
   z-index: 50;
   user-select: none;
   max-width: 96vw;
@@ -348,12 +370,12 @@ html, body {
 }
 
 [data-theme="dark"] .atomic-builder-toolbar {
-  background: linear-gradient(135deg, rgba(30, 30, 38, 0.85) 0%, rgba(18, 18, 24, 0.65) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--frosted-bg);
+  border: var(--frosted-border);
   box-shadow: 
-    0 14px 40px -4px rgba(0, 0, 0, 0.55),
+    0 14px 40px -4px rgba(0, 0, 0, 0.6),
     0 4px 16px -2px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.2);
+    var(--frosted-highlight);
 }
 
 .atomic-toolbar-top-row {
@@ -376,7 +398,7 @@ html, body {
 
 .atomic-cat-tab {
   font-size: 0.70rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 0.2rem 0.6rem;
   border-radius: 9999px;
   border: 1px solid var(--border-subtle);
@@ -396,19 +418,19 @@ html, body {
   background: var(--accent-cyan);
   color: #ffffff;
   border-color: var(--accent-cyan);
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.35);
 }
 
 .atomic-cat-tab.highlight {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: var(--accent-amber);
   color: #ffffff;
-  border-color: rgba(245, 158, 11, 0.5);
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  border-color: var(--accent-amber);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 149, 0, 0.35);
 }
 .atomic-cat-tab.highlight:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45);
+  box-shadow: 0 4px 12px rgba(255, 149, 0, 0.45);
 }
 
 .atomic-toolbar-main-row {
@@ -593,41 +615,44 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   align-items: center;
   gap: 0.45rem;
   padding: 0.42rem 0.85rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 247, 250, 0.7) 100%);
-  backdrop-filter: blur(14px) saturate(180%);
-  -webkit-backdrop-filter: blur(14px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
   border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-sm), var(--frosted-highlight);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
 }
 
 [data-theme="dark"] .floating-atomic-btn {
-  background: linear-gradient(135deg, rgba(30, 30, 38, 0.85) 0%, rgba(18, 18, 24, 0.7) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  background: var(--frosted-bg);
+  border: var(--frosted-border);
+  box-shadow: var(--shadow-sm), var(--frosted-highlight);
 }
 
 .floating-atomic-btn:hover {
-  transform: translateY(-1.5px) scale(1.02);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+  border-color: var(--text-muted);
+}
+
+.floating-atomic-btn:active {
+  transform: scale(0.97);
 }
 
 .floating-atomic-btn.danger {
-  color: #dc2626;
-  border-color: rgba(239, 68, 68, 0.35);
+  color: var(--accent-rose);
+  border-color: rgba(255, 59, 48, 0.35);
 }
 .floating-atomic-btn.danger:hover {
-  background: #ef4444;
+  background: var(--accent-rose);
   color: #ffffff;
-  border-color: #ef4444;
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  border-color: var(--accent-rose);
+  box-shadow: 0 4px 14px rgba(255, 59, 48, 0.35);
 }
 
 /* Drag Hint Badge */
@@ -639,22 +664,22 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   align-items: center;
   gap: 0.4rem;
   padding: 0.35rem 0.75rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(245, 247, 250, 0.6) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
   border-radius: 9999px;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
   pointer-events: none;
   z-index: 35;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm), var(--frosted-highlight);
 }
 
 [data-theme="dark"] .builder-drag-hint {
-  background: linear-gradient(135deg, rgba(30, 30, 38, 0.8) 0%, rgba(18, 18, 24, 0.6) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--frosted-bg);
+  border: var(--frosted-border);
 }
 
 .btn-inspector-clear {
@@ -689,6 +714,12 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   flex-direction: column !important;
   padding: 1.25rem !important;
   gap: 0.85rem !important;
+  background: var(--frosted-bg) !important;
+  backdrop-filter: var(--frosted-blur) !important;
+  -webkit-backdrop-filter: var(--frosted-blur) !important;
+  border: var(--frosted-border) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3), var(--frosted-highlight) !important;
 }
 
 .periodic-picker-toolbar {
@@ -818,13 +849,13 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   left: 50%;
   transform: translateX(-50%);
   width: min(92vw, 640px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(245, 247, 250, 0.72) 100%);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
+  border-radius: 14px;
   padding: 0.65rem 0.95rem;
-  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.12), 0 4px 16px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.15), var(--frosted-highlight);
   z-index: 45;
   display: flex;
   flex-direction: column;
@@ -833,9 +864,9 @@ body.mode-atomic-builder .mobile-inventory-drawer {
 }
 
 [data-theme="dark"] .atomic-inspector-panel {
-  background: linear-gradient(135deg, rgba(28, 28, 36, 0.88) 0%, rgba(18, 18, 24, 0.75) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 16px 44px -4px rgba(0, 0, 0, 0.6);
+  background: var(--frosted-bg);
+  border: var(--frosted-border);
+  box-shadow: 0 20px 48px -4px rgba(0, 0, 0, 0.65), var(--frosted-highlight);
 }
 
 .inspector-badge-row {
@@ -919,19 +950,19 @@ body.mode-atomic-builder .mobile-inventory-drawer {
 }
 
 .match-badge.match-found {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
+  background: rgba(52, 199, 89, 0.15);
+  color: var(--accent-emerald);
 }
 
 .match-badge.match-new {
-  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+  background: var(--accent-amber);
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 2px 6px rgba(255, 149, 0, 0.35);
 }
 
 .match-badge.match-unregistered {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
+  background: rgba(255, 149, 0, 0.12);
+  color: var(--accent-amber);
 }
 
 .match-name {
@@ -945,11 +976,6 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-}
-  border: 1px solid var(--border-subtle);
-  border-radius: 9999px;
-  color: var(--text-secondary);
-  white-space: nowrap;
 }
 
 .inspector-status-msg {
@@ -1126,7 +1152,7 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   overflow: hidden;
 }
 
-/* Left Side: Elements Sidebar (Given Elements) */
+/* Left Side: Elements Sidebar (Given Elements) - Frosted Glass Lab Sidebar */
 .elements-sidebar,
 .sidebar-pane.elements-sidebar {
   order: 1;
@@ -1134,7 +1160,9 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   min-width: 220px;
   max-width: 280px;
   height: 100%;
-  background: var(--bg-sidebar);
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -1158,7 +1186,7 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   touch-action: none;
 }
 
-/* Right Side: Compounds Sidebar (Discovered Compounds Vault) */
+/* Right Side: Compounds Sidebar (Discovered Compounds Vault) - Frosted Glass Lab Sidebar */
 .compounds-sidebar,
 .sidebar-pane.compounds-sidebar {
   order: 3;
@@ -1166,7 +1194,9 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   min-width: 230px;
   max-width: 300px;
   height: 100%;
-  background: var(--bg-sidebar);
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
   border-left: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -1261,15 +1291,19 @@ body.mode-atomic-builder .mobile-inventory-drawer {
 
 .search-input-field {
   width: 100%;
-  background: var(--bg-sidebar-elevated);
+  background: rgba(0, 0, 0, 0.04);
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 0.5rem 1.8rem 0.5rem 2rem;
+  border-radius: 9px;
+  padding: 0.45rem 1.8rem 0.45rem 2rem;
   color: var(--text-primary);
   font-size: 0.825rem;
   font-family: inherit;
   outline: none;
   transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .search-input-field {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .search-input-field::placeholder {
@@ -1686,19 +1720,21 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   40%, 80% { transform: translate3d(calc(var(--x) + 7px), var(--y), 0); border-color: var(--accent-rose); }
 }
 
-/* Canvas Floating Bottom Action Controls */
+/* Canvas Floating Bottom Action Controls - Frosted Glass Capsule */
 .canvas-floating-controls {
   position: absolute;
   bottom: 1.25rem;
   left: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border-subtle);
-  padding: 0.35rem 0.55rem;
+  gap: 0.35rem;
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
+  padding: 0.3rem 0.5rem;
   border-radius: 10px;
-  box-shadow: var(--shadow-hover);
+  box-shadow: var(--shadow-sm), var(--frosted-highlight);
   z-index: 50;
 }
 
@@ -1711,21 +1747,26 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   color: var(--text-secondary);
   font-size: 0.775rem;
   font-weight: 500;
-  padding: 0.35rem 0.65rem;
-  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  border-radius: 7px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .canvas-action-btn:hover {
-  background: var(--bg-sidebar-elevated);
+  background: var(--bg-card);
   border-color: var(--border-subtle);
   color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.canvas-action-btn:active {
+  transform: scale(0.97);
 }
 
 .canvas-action-btn.danger:hover {
-  background: rgba(225, 29, 72, 0.1);
-  border-color: rgba(225, 29, 72, 0.2);
+  background: rgba(255, 59, 48, 0.12);
+  border-color: rgba(255, 59, 48, 0.25);
   color: var(--accent-rose);
 }
 
@@ -1733,7 +1774,7 @@ body.mode-atomic-builder .mobile-inventory-drawer {
    Lab Tools Dock (Reaction Modifiers & Catalysts)
    ========================================================================== */
 /* ==========================================================================
-   Lab Tools Dock: Ultra-Modern Frosted Glass (Glassmorphism)
+   Lab Tools Dock: Apple Precision Lab Instrument Design
    ========================================================================== */
 .canvas-tools-dock {
   position: absolute;
@@ -1742,43 +1783,42 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(245, 247, 250, 0.45) 100%);
-  backdrop-filter: blur(16px) saturate(190%);
-  -webkit-backdrop-filter: blur(16px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
+  gap: 0.5rem;
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
   border-radius: 9999px;
-  padding: 0.35rem 0.65rem 0.35rem 0.85rem;
+  padding: 0.3rem 0.55rem 0.3rem 0.75rem;
   box-shadow: 
     0 10px 30px -4px rgba(0, 0, 0, 0.08),
     0 4px 12px -2px rgba(0, 0, 0, 0.04),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.03);
+    var(--frosted-highlight);
   z-index: 25;
   user-select: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="dark"] .canvas-tools-dock {
-  background: linear-gradient(135deg, rgba(30, 30, 38, 0.72) 0%, rgba(18, 18, 24, 0.52) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--frosted-bg);
+  border: var(--frosted-border);
   box-shadow: 
-    0 14px 40px -4px rgba(0, 0, 0, 0.55),
+    0 14px 40px -4px rgba(0, 0, 0, 0.6),
     0 4px 16px -2px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.45);
+    var(--frosted-highlight);
 }
 
 .dock-badge-pill {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.68rem;
+  gap: 0.35rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
-  padding-right: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border-subtle);
+  padding-right: 0.55rem;
 }
 
 [data-theme="dark"] .dock-badge-pill {
@@ -1787,57 +1827,53 @@ body.mode-atomic-builder .mobile-inventory-drawer {
 }
 
 .dock-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
-  animation: pulseDockDot 2s infinite ease-in-out;
-}
-
-@keyframes pulseDockDot {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.7; }
+  background: var(--accent-emerald);
+  box-shadow: 0 0 6px var(--accent-emerald);
 }
 
 .dock-items {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .tool-dock-card {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 247, 250, 0.5) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  gap: 0.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 9999px;
-  padding: 0.28rem 0.75rem 0.28rem 0.45rem;
+  padding: 0.25rem 0.65rem 0.25rem 0.4rem;
   cursor: grab;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   color: var(--text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-sm);
 }
 
 [data-theme="dark"] .tool-dock-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.12);
-  color: #f4f4f5;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  color: #f5f5f7;
+  box-shadow: var(--shadow-sm);
 }
 
 .tool-dock-card:hover {
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 1);
-  border-color: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-hover);
+}
+
+.tool-dock-card:active {
+  transform: scale(0.96);
+  cursor: grabbing;
 }
 
 [data-theme="dark"] .tool-dock-card:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .tool-dock-card > * {
@@ -1845,39 +1881,33 @@ body.mode-atomic-builder .mobile-inventory-drawer {
 }
 
 .tool-dock-card[data-tool="tool_heat"]:hover {
-  border-color: rgba(249, 115, 22, 0.65);
-  background: linear-gradient(135deg, rgba(255, 237, 213, 0.75) 0%, rgba(254, 215, 170, 0.5) 100%);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  border-color: var(--accent-amber);
+  background: rgba(255, 149, 0, 0.12);
 }
 
 [data-theme="dark"] .tool-dock-card[data-tool="tool_heat"]:hover {
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.22) 0%, rgba(249, 115, 22, 0.08) 100%);
-  border-color: rgba(249, 115, 22, 0.65);
-  box-shadow: 0 6px 22px rgba(249, 115, 22, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+  border-color: var(--accent-amber);
+  background: rgba(255, 149, 0, 0.22);
 }
 
 .tool-dock-card[data-tool="tool_electricity"]:hover {
-  border-color: rgba(6, 182, 212, 0.65);
-  background: linear-gradient(135deg, rgba(207, 250, 254, 0.75) 0%, rgba(165, 243, 252, 0.5) 100%);
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  border-color: var(--accent-cyan);
+  background: rgba(0, 113, 227, 0.12);
 }
 
 [data-theme="dark"] .tool-dock-card[data-tool="tool_electricity"]:hover {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.22) 0%, rgba(6, 182, 212, 0.08) 100%);
-  border-color: rgba(6, 182, 212, 0.65);
-  box-shadow: 0 6px 22px rgba(6, 182, 212, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+  border-color: var(--accent-cyan);
+  background: rgba(0, 113, 227, 0.22);
 }
 
 .tool-dock-card[data-tool="tool_uv"]:hover {
-  border-color: rgba(168, 85, 247, 0.65);
-  background: linear-gradient(135deg, rgba(243, 232, 255, 0.75) 0%, rgba(233, 213, 255, 0.5) 100%);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  border-color: var(--accent-purple);
+  background: rgba(88, 86, 214, 0.12);
 }
 
 [data-theme="dark"] .tool-dock-card[data-tool="tool_uv"]:hover {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(168, 85, 247, 0.08) 100%);
-  border-color: rgba(168, 85, 247, 0.65);
-  box-shadow: 0 6px 22px rgba(168, 85, 247, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+  border-color: var(--accent-purple);
+  background: rgba(88, 86, 214, 0.22);
 }
 
 .tool-dock-emoji {
@@ -1905,26 +1935,39 @@ body.mode-atomic-builder .mobile-inventory-drawer {
 
 /* Tool Tokens on Canvas */
 .craft-tile.tool-card {
-  border-width: 1.5px;
+  border-width: 1px;
   font-weight: 600;
 }
 
 .craft-tile.tool-card[data-tool="tool_heat"] {
-  border-color: #f97316;
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, var(--bg-card) 60%);
-  box-shadow: 0 0 16px rgba(249, 115, 22, 0.35), inset 0 0 10px rgba(249, 115, 22, 0.12);
+  border-color: var(--accent-amber);
+  background: rgba(255, 149, 0, 0.08);
 }
 
 .craft-tile.tool-card[data-tool="tool_electricity"] {
-  border-color: #06b6d4;
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, var(--bg-card) 60%);
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.35), inset 0 0 10px rgba(6, 182, 212, 0.12);
+  border-color: var(--accent-cyan);
+  background: rgba(0, 113, 227, 0.08);
 }
 
 .craft-tile.tool-card[data-tool="tool_uv"] {
-  border-color: #a855f7;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, var(--bg-card) 60%);
-  box-shadow: 0 0 16px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.12);
+  border-color: var(--accent-purple);
+  background: rgba(88, 86, 214, 0.08);
+}
+
+[data-theme="dark"] .craft-tile.tool-card[data-tool="tool_heat"] {
+  border-color: var(--accent-amber);
+  background: rgba(255, 149, 0, 0.18);
+}
+
+[data-theme="dark"] .craft-tile.tool-card[data-tool="tool_electricity"] {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 113, 227, 0.18);
+}
+
+[data-theme="dark"] .craft-tile.tool-card[data-tool="tool_uv"] {
+  border-color: var(--accent-purple);
+  background: rgba(88, 86, 214, 0.18);
+}
 }
 
 /* ==========================================================================
@@ -2216,7 +2259,7 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   }
 
   /* ==========================================================================
-     Full-Width Mobile Bottom Sheet Drawer
+     Full-Width Mobile Bottom Sheet Drawer - Frosted Glass Apple Design
      ========================================================================== */
   .mobile-inventory-drawer {
     display: flex !important;
@@ -2227,11 +2270,13 @@ body.mode-atomic-builder .mobile-inventory-drawer {
     bottom: env(safe-area-inset-bottom, 0px) !important;
     width: 100vw !important;
     height: min(74vh, 580px) !important;
-    background: var(--bg-sidebar) !important;
-    border-top: 1px solid var(--border-strong) !important;
-    border-top-left-radius: 16px !important;
-    border-top-right-radius: 16px !important;
-    box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.22) !important;
+    background: var(--frosted-bg) !important;
+    backdrop-filter: var(--frosted-blur) !important;
+    -webkit-backdrop-filter: var(--frosted-blur) !important;
+    border-top: 1px solid var(--border-subtle) !important;
+    border-top-left-radius: 18px !important;
+    border-top-right-radius: 18px !important;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18), var(--frosted-highlight) !important;
     z-index: 90 !important;
     transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
     will-change: transform;
@@ -2253,7 +2298,7 @@ body.mode-atomic-builder .mobile-inventory-drawer {
     flex-direction: column;
     align-items: center;
     cursor: pointer;
-    background: var(--bg-sidebar);
+    background: transparent;
     border-bottom: 1px solid var(--border-subtle);
     flex-shrink: 0;
     touch-action: pan-y;
@@ -2264,6 +2309,7 @@ body.mode-atomic-builder .mobile-inventory-drawer {
     height: 4px;
     border-radius: 2px;
     background: var(--border-strong);
+    opacity: 0.6;
     margin-bottom: 6px;
   }
 
@@ -2279,13 +2325,17 @@ body.mode-atomic-builder .mobile-inventory-drawer {
   .drawer-segmented-tabs {
     display: flex;
     align-items: center;
-    background: var(--bg-card-hover);
+    background: rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border-subtle);
-    border-radius: 20px;
+    border-radius: 12px;
     padding: 2px;
     gap: 2px;
     flex: 1;
     max-width: 320px;
+  }
+
+  [data-theme="dark"] .drawer-segmented-tabs {
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .segmented-tab {
@@ -2295,14 +2345,14 @@ body.mode-atomic-builder .mobile-inventory-drawer {
     justify-content: center;
     gap: 5px;
     padding: 5px 10px;
-    border-radius: 16px;
+    border-radius: 10px;
     border: none;
     background: transparent;
     color: var(--text-secondary);
     font-size: 0.76rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.15s ease;
     white-space: nowrap;
   }
 
@@ -2671,7 +2721,7 @@ body.is-mobile .bottom-ad-strip {
 }
 
 /* ==========================================================================
-   Modals (3D Molecule Dossier & Reset Confirm)
+   Modals (3D Molecule Dossier & Reset Confirm) - Frosted Glass Apple Design
    ========================================================================== */
 .modal-backdrop {
   position: fixed;
@@ -2679,9 +2729,9 @@ body.is-mobile .bottom-ad-strip {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2699,15 +2749,18 @@ body.is-mobile .bottom-ad-strip {
 }
 
 .modal-dialog {
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border-strong);
-  border-radius: 14px;
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
+  border-radius: 16px;
   width: 90%;
   max-width: 420px;
   padding: 1.5rem;
-  box-shadow: var(--shadow-dragging);
-  transform: scale(0.95);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25), var(--frosted-highlight);
+  transform: scale(0.96);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
 }
 
 .modal-backdrop.is-open .modal-dialog {
@@ -2795,13 +2848,15 @@ body.is-mobile .bottom-ad-strip {
 
 /* 3D Molecule Dossier Dialog */
 .dossier-dialog {
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border-strong);
-  border-radius: 16px;
+  background: var(--frosted-bg);
+  backdrop-filter: var(--frosted-blur);
+  -webkit-backdrop-filter: var(--frosted-blur);
+  border: var(--frosted-border);
+  border-radius: 18px;
   width: 90%;
   max-width: 820px;
   max-height: 88vh;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3), var(--frosted-highlight);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3162,7 +3217,6 @@ body.is-mobile .viewer-canvas-shell canvas {
     <!-- Header: Infinite Craft Clean Minimal Aesthetic -->
     <header class="app-header">
       <div class="header-brand">
-        <span class="brand-glyph">&#9883;</span>
         <h1 class="brand-title">Periodic Forge</h1>
       </div>
 
@@ -3180,12 +3234,12 @@ body.is-mobile .viewer-canvas-shell canvas {
       <!-- Toggleable Dual-Mode Workspace Toolbar -->
       <div class="workspace-mode-switch" id="workspace-mode-switch" role="tablist" aria-label="Workspace View Mode">
         <button id="mode-element-boxes-btn" class="mode-switch-btn active" role="tab" aria-selected="true" data-mode="element-boxes" title="Element Boxes: 2D Crafting Canvas &amp; Grid">
-          <span class="mode-icon">&#128451;&#65039;</span>
+          <svg class="mode-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>
           <span class="mode-text mode-text-full">Element Boxes</span>
           <span class="mode-text mode-text-short">Boxes</span>
         </button>
         <button id="mode-atomic-builder-btn" class="mode-switch-btn" role="tab" aria-selected="false" data-mode="atomic-builder" title="3D Atomic Builder: Immersive 3D Atom Drag &amp; Bond Viewport">
-          <span class="mode-icon">&#9883;</span>
+          <svg class="mode-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3.5"></circle><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(30 12 12)"></ellipse><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-30 12 12)"></ellipse></svg>
           <span class="mode-text mode-text-full">3D Atomic Builder</span>
           <span class="mode-text mode-text-short">3D Builder</span>
         </button>
@@ -3255,7 +3309,6 @@ body.is-mobile .viewer-canvas-shell canvas {
       <aside id="elements-bar" class="sidebar-pane elements-sidebar" aria-label="Base Elements">
         <div class="sidebar-header">
           <div class="sidebar-title-group">
-            <span class="sidebar-icon">&#9889;</span>
             <span class="sidebar-title">Elements</span>
             <span id="tab-elements-badge" class="sidebar-badge">118</span>
           </div>
@@ -3367,7 +3420,7 @@ body.is-mobile .viewer-canvas-shell canvas {
               <button class="atomic-cat-tab" data-cat="metals">Metals</button>
               <button class="atomic-cat-tab" data-cat="halogens-noble">Noble &amp; Halogens</button>
               <button class="atomic-cat-tab" data-cat="common">Common</button>
-              <button id="builder-open-all-btn" class="atomic-cat-tab highlight" title="Open complete 118-element periodic table picker">&#9883; All 118 Elements &blacktriangledown;</button>
+              <button id="builder-open-all-btn" class="atomic-cat-tab highlight" title="Open complete 118-element periodic table picker">+ All 118 Elements &blacktriangledown;</button>
             </div>
           </div>
 
@@ -3456,15 +3509,15 @@ body.is-mobile .viewer-canvas-shell canvas {
         <!-- Floating On-Canvas Controls Dock (Permanently accessible, never clipped) -->
         <div class="atomic-floating-controls" id="atomic-floating-controls">
           <button id="canvas-floating-clear-btn" class="floating-atomic-btn danger" title="Clear all atoms from 3D viewport (Delete / Backspace)">
-            <span class="floating-btn-icon">&#129529;</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             <span class="floating-btn-text">Clear Canvas</span>
           </button>
           <button id="canvas-floating-relax-btn" class="floating-atomic-btn" title="VSEPR Molecular Relaxation &amp; 3D Angle Optimization">
-            <span class="floating-btn-icon">&#9879;&#65039;</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="6" r="2.5"></circle><circle cx="18" cy="18" r="2.5"></circle><line x1="8" y1="8" x2="16" y2="16"></line></svg>
             <span class="floating-btn-text">Relax &amp; Align</span>
           </button>
           <button id="canvas-floating-center-btn" class="floating-atomic-btn" title="Center 3D View">
-            <span class="floating-btn-icon">&#127919;</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="7" x2="12" y2="17"></line><line x1="7" y1="12" x2="17" y2="12"></line></svg>
             <span class="floating-btn-text">Center</span>
           </button>
         </div>
@@ -3512,7 +3565,6 @@ body.is-mobile .viewer-canvas-shell canvas {
       <aside id="compounds-bar" class="sidebar-pane compounds-sidebar" aria-label="Discovered Compounds">
         <div class="sidebar-header">
           <div class="sidebar-title-group">
-            <span class="sidebar-icon">&#129514;</span>
             <span class="sidebar-title">Compounds</span>
             <span id="tab-compounds-badge" class="sidebar-badge">0</span>
           </div>
@@ -3559,12 +3611,10 @@ body.is-mobile .viewer-canvas-shell canvas {
             <!-- Segmented Tab Switcher ("Elements" / "Compounds") -->
             <div class="drawer-segmented-tabs" role="tablist">
               <button id="mobile-tab-elements" class="segmented-tab active" role="tab" aria-selected="true" data-tab="elements">
-                <span class="tab-emoji">&#9889;</span>
                 <span class="tab-label">Elements</span>
                 <span id="mobile-elements-badge" class="tab-badge">118</span>
               </button>
               <button id="mobile-tab-compounds" class="segmented-tab" role="tab" aria-selected="false" data-tab="compounds">
-                <span class="tab-emoji">&#129514;</span>
                 <span class="tab-label">Compounds</span>
                 <span id="mobile-compounds-badge" class="tab-badge">0</span>
               </button>
@@ -3713,7 +3763,11 @@ body.is-mobile .viewer-canvas-shell canvas {
     <div id="reset-modal" class="modal-backdrop" role="dialog" aria-modal="true">
       <div class="modal-dialog">
         <div class="modal-title-row">
-          <span style="font-size: 1.5rem;">&#9888;&#65039;</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-rose)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
           <h2 class="modal-heading">Reset All Discoveries?</h2>
         </div>
         <p class="modal-body-text">
@@ -3731,10 +3785,9 @@ body.is-mobile .viewer-canvas-shell canvas {
       <div class="modal-dialog periodic-picker-dialog">
         <div class="modal-header">
           <div class="modal-title-wrap">
-            <span class="modal-header-icon">&#9883;</span>
             <div>
-              <h2 id="periodic-modal-title" class="modal-title">Periodic Table &bull; All 118 Elements</h2>
-              <span class="modal-subtitle">Click any element to spawn directly into the 3D Atomic Builder</span>
+              <h2 id="periodic-modal-title" class="modal-title">Periodic Table</h2>
+              <span class="modal-subtitle">All 118 Elements &bull; Click any element to spawn directly into the 3D Atomic Builder</span>
             </div>
           </div>
           <button id="close-periodic-modal-btn" class="modal-close-btn" aria-label="Close dialog">&#10005;</button>
@@ -8082,19 +8135,19 @@ const audio = new SoundEngine();
 
   const DEFAULT_CPK = '#94A3B8';
 
-  // Proportional visual atomic sphere radii in 3D scene units
+  // Proportional visual atomic sphere radii in 3D scene units (Ball-and-stick proportions)
   const ATOM_RADII = {
-    H:  0.38, He: 0.40,
-    Li: 0.62, Be: 0.54, B: 0.58, C: 0.65, N: 0.60, O: 0.56, F: 0.52, Ne: 0.46,
-    Na: 0.78, Mg: 0.74, Al: 0.72, Si: 0.72, P: 0.70, S: 0.72, Cl: 0.68, Ar: 0.58,
-    K:  0.86, Ca: 0.82, Sc: 0.76, Ti: 0.74, V: 0.72, Cr: 0.72, Mn: 0.72, Fe: 0.76,
-    Co: 0.74, Ni: 0.74, Cu: 0.76, Zn: 0.76, Ga: 0.72, Ge: 0.72, As: 0.70, Se: 0.72,
-    Br: 0.76, Kr: 0.64,
-    Rb: 0.90, Sr: 0.86, Y: 0.80, Zr: 0.78, Nb: 0.76, Mo: 0.76, Tc: 0.76, Ru: 0.76,
-    Rh: 0.76, Pd: 0.78, Ag: 0.82, Cd: 0.80, In: 0.76, Sn: 0.76, Sb: 0.74, Te: 0.74,
-    I:  0.84, Xe: 0.70,
-    Cs: 0.94, Ba: 0.90, Pt: 0.82, Au: 0.84, Hg: 0.82, Pb: 0.88, Bi: 0.86,
-    U:  0.88, Th: 0.88
+    H:  0.30, He: 0.32,
+    Li: 0.46, Be: 0.40, B: 0.44, C: 0.48, N: 0.45, O: 0.43, F: 0.38, Ne: 0.36,
+    Na: 0.52, Mg: 0.48, Al: 0.48, Si: 0.48, P: 0.50, S: 0.50, Cl: 0.46, Ar: 0.42,
+    K:  0.56, Ca: 0.54, Sc: 0.52, Ti: 0.50, V: 0.50, Cr: 0.50, Mn: 0.50, Fe: 0.52,
+    Co: 0.50, Ni: 0.50, Cu: 0.52, Zn: 0.52, Ga: 0.50, Ge: 0.50, As: 0.48, Se: 0.50,
+    Br: 0.50, Kr: 0.44,
+    Rb: 0.58, Sr: 0.56, Y: 0.52, Zr: 0.52, Nb: 0.52, Mo: 0.52, Tc: 0.52, Ru: 0.52,
+    Rh: 0.52, Pd: 0.52, Ag: 0.54, Cd: 0.52, In: 0.52, Sn: 0.52, Sb: 0.50, Te: 0.50,
+    I:  0.54, Xe: 0.46,
+    Cs: 0.60, Ba: 0.58, Pt: 0.54, Au: 0.56, Hg: 0.54, Pb: 0.56, Bi: 0.54,
+    U:  0.58, Th: 0.58
   };
 
   // Covalent radii in scene units for realistic equilibrium bond distance calculation:
@@ -8584,7 +8637,7 @@ const audio = new SoundEngine();
       }
       dir.normalize();
 
-      const idealDist = (this._getCovalentRadius(draggedAtom.symbol) + this._getCovalentRadius(targetAtom.symbol)) * 1.25;
+      const idealDist = (this._getCovalentRadius(draggedAtom.symbol) + this._getCovalentRadius(targetAtom.symbol)) * 1.45;
       const newPos = posT.clone().add(dir.multiplyScalar(idealDist));
       const delta = newPos.clone().sub(posD);
 
@@ -9018,7 +9071,7 @@ const audio = new SoundEngine();
         if (edge.order === 2) orderFactor = 0.88;
         if (edge.order === 3) orderFactor = 0.80;
 
-        const idealDist = (this._getCovalentRadius(a.symbol) + this._getCovalentRadius(b.symbol)) * 1.25 * orderFactor;
+        const idealDist = (this._getCovalentRadius(a.symbol) + this._getCovalentRadius(b.symbol)) * 1.45 * orderFactor;
         const stretch = d - idealDist;
         const forceMag = stretch * 0.18;
         const f = delta.clone().normalize().multiplyScalar(forceMag);
@@ -9047,10 +9100,10 @@ const audio = new SoundEngine();
           const posB = b.mesh.position;
           const delta = new THREE.Vector3().subVectors(posB, posA);
           const d = delta.length() || 0.001;
-          const minDist = (a.radius + b.radius) * (areBonded ? 0.85 : 1.25);
+          const minDist = (a.radius + b.radius) * (areBonded ? 1.05 : 1.45);
 
           if (d < minDist) {
-            const repMag = ((minDist - d) / minDist) * (areBonded ? 0.12 : 0.22);
+            const repMag = ((minDist - d) / minDist) * (areBonded ? 0.16 : 0.28);
             const rf = delta.clone().normalize().multiplyScalar(repMag);
             forces.get(a.id).sub(rf);
             forces.get(b.id).add(rf);
@@ -9440,14 +9493,14 @@ const CPK_COLORS = {
 
 const DEFAULT_CPK = '#94A3B8';
 
-// Proportional Atomic Radii (Normalized units for ball-and-stick visualization)
+// Proportional Atomic Radii (Standard ball-and-stick proportions for clear bond visibility)
 const ATOM_RADII_PROPORTIONS = {
-  H:  0.32,
-  He: 0.35,
-  Li: 0.52, Be: 0.44, B: 0.50, C: 0.62, N: 0.58, O: 0.54, F: 0.48, Ne: 0.40,
-  Na: 0.68, Mg: 0.62, Al: 0.64, Si: 0.68, P: 0.72, S: 0.74, Cl: 0.70, Ar: 0.55,
-  K:  0.78, Ca: 0.75, Fe: 0.74, Cu: 0.72, Zn: 0.72, Br: 0.78, Kr: 0.60,
-  Ag: 0.78, I:  0.86, Xe: 0.65, Au: 0.80, Pt: 0.78, Pb: 0.84
+  H:  0.28,
+  He: 0.30,
+  Li: 0.44, Be: 0.38, B: 0.42, C: 0.46, N: 0.44, O: 0.42, F: 0.38, Ne: 0.36,
+  Na: 0.50, Mg: 0.46, Al: 0.48, Si: 0.48, P: 0.50, S: 0.50, Cl: 0.46, Ar: 0.42,
+  K:  0.54, Ca: 0.52, Fe: 0.52, Cu: 0.50, Zn: 0.50, Br: 0.50, Kr: 0.44,
+  Ag: 0.54, I:  0.54, Xe: 0.46, Au: 0.54, Pt: 0.54, Pb: 0.56
 };
 
 const ATOM_RADII = {
@@ -9780,20 +9833,37 @@ class MoleculeViewer3D {
     const centerY = (minY + maxY) / 2;
     const centerZ = (minZ + maxZ) / 2;
 
-    const spanX = maxX - minX;
-    const spanY = maxY - minY;
-    const spanZ = maxZ - minZ;
-    const maxSpan = Math.max(spanX, spanY, spanZ, 45);
+    // Fixed physical bond length scale (TARGET_BOND_LENGTH = 2.45 scene units)
+    // S = 54 px = 1.0 Angstrom. In Three.js world units, equilibrium bond is ~2.45.
+    // This guarantees that in compounds with lots of atoms, atom spheres NEVER huddle
+    // or swallow the bonds. Bond cylinders remain elongated, distinct, and fully visible!
+    const TARGET_BOND_LENGTH = 2.45;
+    let avgBondDist = 0;
+    let countBonds = 0;
+    if (this.bonds && this.bonds.length > 0) {
+      this.bonds.forEach(([i, j]) => {
+        if (this.atoms[i] && this.atoms[j]) {
+          const dx = this.atoms[j].x - this.atoms[i].x;
+          const dy = this.atoms[j].y - this.atoms[i].y;
+          const dz = this.atoms[j].z - this.atoms[i].z;
+          const d = Math.hypot(dx, dy, dz);
+          if (d > 0.001) {
+            avgBondDist += d;
+            countBonds++;
+          }
+        }
+      });
+    }
 
-    // Target scene span is ~2.3 units for spacious, comfortable initial framing
-    const scaleFactor = 2.3 / maxSpan;
+    const inputEquilibrium = countBonds > 0 ? (avgBondDist / countBonds) : (1.40 * S);
+    const worldScale = TARGET_BOND_LENGTH / Math.max(inputEquilibrium, 10);
 
-    // Transformed atom positions
+    // Transformed atom positions with constant ball-and-stick proportions
     const worldPositions = this.atoms.map(a => {
       return new THREE.Vector3(
-        (a.x - centerX) * scaleFactor,
-        -(a.y - centerY) * scaleFactor, // Flip Y for standard 3D cartesian coordinates
-        (a.z - centerZ) * scaleFactor
+        (a.x - centerX) * worldScale,
+        -(a.y - centerY) * worldScale, // Flip Y for standard 3D cartesian coordinates
+        (a.z - centerZ) * worldScale
       );
     });
 
@@ -9939,16 +10009,16 @@ class MoleculeViewer3D {
     const bbox = new THREE.Box3().setFromObject(this.moleculeGroup);
     const sphere = new THREE.Sphere();
     bbox.getBoundingSphere(sphere);
-    const effectiveRadius = Math.max(sphere.radius || 1.35, 1.35);
+    const effectiveRadius = Math.max(sphere.radius || 2.0, 2.0);
 
     // Camera FOV is 40 degrees. To fit the molecule with comfortable ~45% viewport framing and generous breathing space:
     const fovInRad = (this.camera ? this.camera.fov : 40) * Math.PI / 180;
     const fitDistance = effectiveRadius / Math.sin(fovInRad / 2);
-    // 1.55x margin ensures the model is never super zoomed in, giving it a balanced museum-quality framing
-    this.defaultOrbitRadius = Math.max(6.5, fitDistance * 1.55);
+    // 1.45x margin ensures the model has pristine museum-quality framing regardless of atom count
+    this.defaultOrbitRadius = Math.max(7.0, fitDistance * 1.45);
     this.orbitRadius = this.defaultOrbitRadius;
-    this.minZoom = Math.max(1.0, this.defaultOrbitRadius * 0.15);
-    this.maxZoom = Math.max(45.0, this.defaultOrbitRadius * 5.0);
+    this.minZoom = Math.max(0.8, this.defaultOrbitRadius * 0.10);
+    this.maxZoom = Math.max(120.0, this.defaultOrbitRadius * 6.0);
   }
 
   resetView() {
@@ -10439,6 +10509,96 @@ function getMolecularStructureData(key) {
         // Ring H
         [0, 19], [1, 20], [2, 21], [3, 22]
       ]
+    },
+    // Sulfuric Acid (H2SO4 - Tetrahedral S(=O)2(OH)2)
+    'H2SO4': {
+      atoms: [
+        { symbol: 'S', x: 0, y: 0, z: 0 },
+        { symbol: 'O', x: 0, y: 1.43 * S, z: 0 }, // S=O
+        { symbol: 'O', x: 1.35 * S, y: -0.48 * S, z: 0 }, // S=O
+        { symbol: 'O', x: -0.68 * S, y: -0.72 * S, z: 1.05 * S }, // S-OH
+        { symbol: 'H', x: -1.55 * S, y: -0.45 * S, z: 1.30 * S },
+        { symbol: 'O', x: -0.68 * S, y: -0.72 * S, z: -1.05 * S }, // S-OH
+        { symbol: 'H', x: -1.55 * S, y: -0.45 * S, z: -1.30 * S }
+      ],
+      bonds: [
+        [0, 1, 2], [0, 2, 2],
+        [0, 3, 1], [3, 4, 1],
+        [0, 5, 1], [5, 6, 1]
+      ]
+    },
+    // Phosphoric Acid (H3PO4 - Tetrahedral P(=O)(OH)3)
+    'H3PO4': {
+      atoms: [
+        { symbol: 'P', x: 0, y: 0, z: 0 },
+        { symbol: 'O', x: 0, y: 1.50 * S, z: 0 }, // P=O
+        { symbol: 'O', x: 1.41 * S, y: -0.50 * S, z: 0 }, // P-OH
+        { symbol: 'H', x: 2.10 * S, y: 0.10 * S, z: 0 },
+        { symbol: 'O', x: -0.71 * S, y: -0.50 * S, z: 1.22 * S }, // P-OH
+        { symbol: 'H', x: -1.50 * S, y: -0.10 * S, z: 1.50 * S },
+        { symbol: 'O', x: -0.71 * S, y: -0.50 * S, z: -1.22 * S }, // P-OH
+        { symbol: 'H', x: -1.50 * S, y: -0.10 * S, z: -1.50 * S }
+      ],
+      bonds: [
+        [0, 1, 2],
+        [0, 2, 1], [2, 3, 1],
+        [0, 4, 1], [4, 5, 1],
+        [0, 6, 1], [6, 7, 1]
+      ]
+    },
+    // Iron(III) Oxide / Rust (Fe2O3 - Open Bipyramidal Coordination)
+    'Fe2O3': {
+      atoms: [
+        { symbol: 'Fe', x: -1.45 * S, y: 0, z: 0 },
+        { symbol: 'Fe', x: 1.45 * S, y: 0, z: 0 },
+        { symbol: 'O',  x: 0, y: 0, z: 1.15 * S }, // Bridging O
+        { symbol: 'O',  x: 0, y: 1.25 * S, z: -0.65 * S }, // Bridging O
+        { symbol: 'O',  x: 0, y: -1.25 * S, z: -0.65 * S }  // Bridging O
+      ],
+      bonds: [
+        [0, 2, 1], [1, 2, 1],
+        [0, 3, 1], [1, 3, 1],
+        [0, 4, 1], [1, 4, 1]
+      ]
+    },
+    // Ethanol (C2H6O / C2H5OH - Staggered C-C-O-H)
+    'C2H6O': {
+      atoms: [
+        { symbol: 'C', x: -1.15 * S, y: 0, z: 0 },
+        { symbol: 'C', x: 0.38 * S, y: 0, z: 0 },
+        { symbol: 'O', x: 1.15 * S, y: 1.18 * S, z: 0 },
+        { symbol: 'H', x: 2.08 * S, y: 1.05 * S, z: 0.2 * S },
+        // C1 H3
+        { symbol: 'H', x: -1.55 * S, y: 0.98 * S, z: 0 },
+        { symbol: 'H', x: -1.55 * S, y: -0.50 * S, z: 0.86 * S },
+        { symbol: 'H', x: -1.55 * S, y: -0.50 * S, z: -0.86 * S },
+        // C2 H2
+        { symbol: 'H', x: 0.72 * S, y: -0.65 * S, z: 0.86 * S },
+        { symbol: 'H', x: 0.72 * S, y: -0.65 * S, z: -0.86 * S }
+      ],
+      bonds: [
+        [0, 1], [1, 2], [2, 3],
+        [0, 4], [0, 5], [0, 6],
+        [1, 7], [1, 8]
+      ]
+    },
+    // Acetic Acid (C2H4O2 / CH3COOH)
+    'C2H4O2': {
+      atoms: [
+        { symbol: 'C', x: -1.10 * S, y: 0, z: 0 },
+        { symbol: 'C', x: 0.40 * S, y: 0, z: 0 },
+        { symbol: 'O', x: 1.05 * S, y: 1.15 * S, z: 0 }, // C=O
+        { symbol: 'O', x: 1.10 * S, y: -1.15 * S, z: 0 }, // C-OH
+        { symbol: 'H', x: 2.05 * S, y: -1.05 * S, z: 0 },
+        // Methyl H3
+        { symbol: 'H', x: -1.50 * S, y: 0.98 * S, z: 0 },
+        { symbol: 'H', x: -1.50 * S, y: -0.50 * S, z: 0.86 * S },
+        { symbol: 'H', x: -1.50 * S, y: -0.50 * S, z: -0.86 * S }
+      ],
+      bonds: [
+        [0, 1], [1, 2, 2], [1, 3, 1], [3, 4, 1],
+        [0, 5], [0, 6], [0, 7]
+      ]
     }
   };
 
@@ -10541,9 +10701,11 @@ function generateProceduralMolecularStructure(key, S) {
   // Build catenated carbon backbone if organic molecule
   if (cCount > 0) {
     const carbonIndices = [];
-    if (cCount >= 6) {
-      // Form 6-carbon aromatic ring
-      const r = 1.39 * S;
+    const isAromatic = cCount >= 6 && hCount <= (cCount * 1.5 + 2);
+
+    if (isAromatic) {
+      // 1. Form 6-carbon aromatic ring
+      const r = 1.40 * S;
       for (let i = 0; i < 6; i++) {
         const angle = (i * 60) * Math.PI / 180;
         const idx = atoms.length;
@@ -10551,25 +10713,28 @@ function generateProceduralMolecularStructure(key, S) {
           symbol: 'C',
           x: r * Math.cos(angle),
           y: r * Math.sin(angle),
-          z: 0,
+          z: 0.05 * S * ((i % 2 === 0) ? 1 : -1),
           color: CPK_COLORS['C'],
           radius: ATOM_RADII['C']
         });
         carbonIndices.push(idx);
-        valenceUsed[idx] = 2; // Two ring bonds
+        valenceUsed[idx] = 2; // Two aromatic ring bonds
       }
       for (let i = 0; i < 6; i++) {
-        bonds.push([carbonIndices[i], carbonIndices[(i + 1) % 6]]);
+        bonds.push([carbonIndices[i], carbonIndices[(i + 1) % 6], (i % 2 === 0 ? 2 : 1)]);
       }
 
-      // Remaining carbons form side-chain branches
-      let prevC = carbonIndices[0];
+      // 2. Remaining carbons branch OUTWARD radially from distinct ring vertices
       for (let i = 6; i < cCount; i++) {
+        const ringIdx = (i - 6) % 6;
+        const parentC = carbonIndices[ringIdx];
+        const radAngle = (ringIdx * 60) * Math.PI / 180;
+        const branchDist = 1.50 * S * (1 + Math.floor((i - 6) / 6));
+        const px = atoms[parentC].x + branchDist * Math.cos(radAngle);
+        const py = atoms[parentC].y + branchDist * Math.sin(radAngle);
+        const pz = ((i % 2 === 0) ? 0.35 : -0.35) * S;
+
         const idx = atoms.length;
-        const branchAngle = ((i - 6) * 50) * Math.PI / 180;
-        const px = atoms[prevC].x + 1.45 * S * Math.cos(branchAngle);
-        const py = atoms[prevC].y + 1.45 * S * Math.sin(branchAngle);
-        const pz = ((i % 2 === 0) ? 0.3 : -0.3) * S;
         atoms.push({
           symbol: 'C',
           x: px, y: py, z: pz,
@@ -10578,17 +10743,16 @@ function generateProceduralMolecularStructure(key, S) {
         });
         carbonIndices.push(idx);
         valenceUsed[idx] = 0;
-        addBond(prevC, idx);
-        prevC = idx;
+        addBond(parentC, idx, 1);
       }
     } else {
-      // Linear/zigzag chain for C < 6
+      // Extended 3D Zigzag / Staggered Alkane Chain
       let prevC = null;
       for (let i = 0; i < cCount; i++) {
         const idx = atoms.length;
-        const x = (i - (cCount - 1) / 2) * 1.35 * S;
-        const y = (i % 2 === 0 ? 0.35 : -0.35) * S;
-        const z = (i % 3 === 0 ? 0.2 : -0.2) * S;
+        const x = (i - (cCount - 1) / 2) * 1.45 * S;
+        const y = (i % 2 === 0 ? 0.42 : -0.42) * S;
+        const z = (i % 3 === 0 ? 0.30 : (i % 3 === 1 ? -0.30 : 0)) * S;
         atoms.push({
           symbol: 'C',
           x, y, z,
@@ -10598,13 +10762,13 @@ function generateProceduralMolecularStructure(key, S) {
         carbonIndices.push(idx);
         valenceUsed[idx] = 0;
         if (prevC !== null) {
-          addBond(prevC, idx);
+          addBond(prevC, idx, 1);
         }
         prevC = idx;
       }
     }
 
-    // Attach heteroatoms (N, O, S, P, Halogens) respecting valence (< 4 on carbon)
+    // Attach heteroatoms (N, O, S, P, Halogens) distributed across different carbons
     const heteroQueue = [];
     entries.forEach(([sym, cnt]) => {
       if (sym !== 'C' && sym !== 'H') {
@@ -10613,15 +10777,20 @@ function generateProceduralMolecularStructure(key, S) {
     });
 
     heteroQueue.forEach((sym, hIdx) => {
-      let targetC = carbonIndices.find(ci => (valenceUsed[ci] || 0) < 4);
-      if (targetC === undefined) targetC = carbonIndices[carbonIndices.length - 1];
+      // Find carbon with lowest used valence
+      let targetC = carbonIndices[hIdx % carbonIndices.length];
+      for (const ci of carbonIndices) {
+        if ((valenceUsed[ci] || 0) < (valenceUsed[targetC] || 0)) {
+          targetC = ci;
+        }
+      }
 
       const idx = atoms.length;
-      const angle = (hIdx * 65) * Math.PI / 180;
-      const dist = 1.35 * S;
+      const angle = (hIdx * 110 + 45) * Math.PI / 180;
+      const dist = 1.42 * S;
       const px = atoms[targetC].x + dist * Math.cos(angle);
       const py = atoms[targetC].y + dist * Math.sin(angle);
-      const pz = ((hIdx % 2 === 0) ? 0.35 : -0.35) * S;
+      const pz = ((hIdx % 2 === 0) ? 0.45 : -0.45) * S;
 
       atoms.push({
         symbol: sym,
@@ -10630,28 +10799,29 @@ function generateProceduralMolecularStructure(key, S) {
         radius: ATOM_RADII[sym] || 15
       });
       valenceUsed[idx] = 0;
+
       let bondOrd = 1;
-      if (sym === 'O' && (valenceUsed[targetC] || 0) <= 2 && remainingH <= carbonIndices.length) {
+      if (sym === 'O' && (valenceUsed[targetC] || 0) <= 2) {
         bondOrd = 2; // Carbonyl C=O double bond
       }
       addBond(targetC, idx, bondOrd);
     });
 
-    // Cap with Hydrogens respecting each atom's max valence
+    // Cap with Hydrogens pointing radially outward from parent atoms
     let remainingH = hCount;
     for (let ai = 0; ai < atoms.length && remainingH > 0; ai++) {
       const sym = atoms[ai].symbol;
       const maxV = MAX_VALENCE[sym] || 4;
       const currentV = valenceUsed[ai] || 0;
-      const neededH = Math.min(remainingH, maxV - currentV);
+      const neededH = Math.min(remainingH, Math.max(0, maxV - currentV));
 
       for (let k = 0; k < neededH; k++) {
         const hIdx = atoms.length;
-        const theta = ((k + 1) * 110) * Math.PI / 180;
-        const hDist = 1.0 * S;
+        const theta = ((k + 1) * 120 + ai * 50) * Math.PI / 180;
+        const hDist = 1.10 * S;
         const hx = atoms[ai].x + hDist * Math.cos(theta);
         const hy = atoms[ai].y + hDist * Math.sin(theta);
-        const hz = (k % 2 === 0 ? 0.5 : -0.5) * S;
+        const hz = ((k + ai) % 2 === 0 ? 0.65 : -0.65) * S;
 
         atoms.push({
           symbol: 'H',
@@ -10660,83 +10830,164 @@ function generateProceduralMolecularStructure(key, S) {
           radius: ATOM_RADII['H'] || 12
         });
         valenceUsed[hIdx] = 0;
-        addBond(ai, hIdx);
+        addBond(ai, hIdx, 1);
         remainingH--;
       }
     }
 
-    // Surplus H attaches to peripheral atoms
+    // Surplus H attaches to peripheral atoms in open space
     while (remainingH > 0) {
-      const parent = atoms.length > 1 ? Math.floor(Math.random() * (atoms.length / 2)) : 0;
+      const parent = Math.floor(Math.random() * atoms.length);
       const hIdx = atoms.length;
       const randAngle = Math.random() * Math.PI * 2;
       atoms.push({
         symbol: 'H',
-        x: atoms[parent].x + 1.0 * S * Math.cos(randAngle),
-        y: atoms[parent].y + 1.0 * S * Math.sin(randAngle),
-        z: (Math.random() - 0.5) * S,
+        x: atoms[parent].x + 1.10 * S * Math.cos(randAngle),
+        y: atoms[parent].y + 1.10 * S * Math.sin(randAngle),
+        z: (Math.random() - 0.5) * 1.2 * S,
         color: CPK_COLORS['H'],
         radius: ATOM_RADII['H'] || 12
       });
-      addBond(parent, hIdx);
+      addBond(parent, hIdx, 1);
       remainingH--;
     }
   } else {
-    // Inorganic / Non-carbon fallback (e.g. salts, acids, oxides)
-    let centralSym = entries[0][0];
-    for (const [el] of entries) {
-      if (el !== 'H' && el !== 'F' && el !== 'Cl') {
-        centralSym = el;
-        break;
-      }
-    }
-    const centralIdx = atoms.length;
-    atoms.push({
-      symbol: centralSym,
-      x: 0, y: 0, z: 0,
-      color: CPK_COLORS[centralSym] || DEFAULT_CPK,
-      radius: ATOM_RADII[centralSym] || 18
-    });
-    valenceUsed[centralIdx] = 0;
+    // Inorganic / Coordination Compounds (e.g. Al2(SO4)3, Fe2O3, CaCO3, Salts, Oxides)
+    // Build a spacious polycentric network rather than clumping all atoms around one center!
+    const nonOxyNonH = [];
+    const oxygens = [];
+    const halogens = [];
+    const hydrogens = [];
 
-    const ligands = [];
     entries.forEach(([el, cnt]) => {
-      const count = (el === centralSym) ? cnt - 1 : cnt;
-      for (let i = 0; i < count; i++) ligands.push(el);
+      for (let c = 0; c < cnt; c++) {
+        if (el === 'O') oxygens.push(el);
+        else if (el === 'H') hydrogens.push(el);
+        else if (el === 'F' || el === 'Cl' || el === 'Br' || el === 'I') halogens.push(el);
+        else nonOxyNonH.push(el);
+      }
     });
 
-    ligands.forEach((sym, li) => {
-      const lIdx = atoms.length;
-      const phi = Math.acos(1 - 2 * (li + 0.5) / ligands.length);
-      const theta = Math.PI * (1 + Math.sqrt(5)) * li;
-      const dist = 1.35 * S;
-      const lx = dist * Math.sin(phi) * Math.cos(theta);
-      const ly = dist * Math.sin(phi) * Math.sin(theta);
-      const lz = dist * Math.cos(phi);
+    const centralAtoms = nonOxyNonH.length > 0 ? nonOxyNonH : (oxygens.length > 0 ? [oxygens.shift()] : ['Na']);
+    const centralIndices = [];
+
+    // Place central/metal atoms spaced out along an open 3D coordination chain/frame
+    const numCenters = centralAtoms.length;
+    for (let ci = 0; ci < numCenters; ci++) {
+      const sym = centralAtoms[ci];
+      const idx = atoms.length;
+      const angle = (ci * 2 * Math.PI) / Math.max(1, numCenters);
+      const dist = numCenters > 1 ? (1.60 * S * Math.sqrt(numCenters)) : 0;
+      const cx = dist * Math.cos(angle);
+      const cy = dist * Math.sin(angle);
+      const cz = ((ci % 2 === 0) ? 0.35 : -0.35) * S;
 
       atoms.push({
         symbol: sym,
-        x: lx, y: ly, z: lz,
+        x: cx, y: cy, z: cz,
         color: CPK_COLORS[sym] || DEFAULT_CPK,
-        radius: ATOM_RADII[sym] || 15
+        radius: ATOM_RADII[sym] || 18
       });
-      addBond(centralIdx, lIdx);
+      centralIndices.push(idx);
+      valenceUsed[idx] = 0;
+    }
+
+    // Connect adjacent central atoms directly or prepare bridging
+    if (centralIndices.length > 1 && oxygens.length === 0) {
+      for (let ci = 0; ci < centralIndices.length - 1; ci++) {
+        addBond(centralIndices[ci], centralIndices[ci + 1], 1);
+      }
+    }
+
+    // Distribute Oxygens symmetrically around the central atoms (bridging & terminal)
+    oxygens.forEach((oxSym, oi) => {
+      const c1 = centralIndices[oi % centralIndices.length];
+      const c2 = centralIndices[(oi + 1) % centralIndices.length];
+      const oxIdx = atoms.length;
+
+      let oxPos;
+      if (centralIndices.length > 1 && oi < centralIndices.length) {
+        // Bridging Oxygen between two central atoms
+        oxPos = {
+          x: (atoms[c1].x + atoms[c2].x) / 2 + (Math.sin(oi) * 0.4 * S),
+          y: (atoms[c1].y + atoms[c2].y) / 2 + (Math.cos(oi) * 0.4 * S),
+          z: ((oi % 2 === 0) ? 0.6 : -0.6) * S
+        };
+      } else {
+        // Terminal / Oxoanion Oxygen radiating outward
+        const theta = ((oi + 1) * 110) * Math.PI / 180;
+        const oxDist = 1.45 * S;
+        oxPos = {
+          x: atoms[c1].x + oxDist * Math.cos(theta),
+          y: atoms[c1].y + oxDist * Math.sin(theta),
+          z: ((oi % 2 === 0) ? 0.5 : -0.5) * S
+        };
+      }
+
+      atoms.push({
+        symbol: 'O',
+        x: oxPos.x, y: oxPos.y, z: oxPos.z,
+        color: CPK_COLORS['O'],
+        radius: ATOM_RADII['O'] || 16
+      });
+      valenceUsed[oxIdx] = 0;
+      addBond(c1, oxIdx, 1);
+      if (centralIndices.length > 1 && oi < centralIndices.length) {
+        addBond(c2, oxIdx, 1);
+      }
+    });
+
+    // Distribute Halogens
+    halogens.forEach((hxSym, hi) => {
+      const parentC = centralIndices[hi % centralIndices.length];
+      const hxIdx = atoms.length;
+      const angle = (hi * 120 + 60) * Math.PI / 180;
+      const dist = 1.55 * S;
+      atoms.push({
+        symbol: hxSym,
+        x: atoms[parentC].x + dist * Math.cos(angle),
+        y: atoms[parentC].y + dist * Math.sin(angle),
+        z: (hi % 2 === 0 ? 0.4 : -0.4) * S,
+        color: CPK_COLORS[hxSym] || DEFAULT_CPK,
+        radius: ATOM_RADII[hxSym] || 16
+      });
+      valenceUsed[hxIdx] = 0;
+      addBond(parentC, hxIdx, 1);
+    });
+
+    // Distribute Hydrogens (bind to oxygens or central atoms)
+    hydrogens.forEach((hSym, hIdx) => {
+      const oxyIndices = atoms.map((a, i) => a.symbol === 'O' ? i : -1).filter(i => i >= 0);
+      const parent = oxyIndices.length > 0 ? oxyIndices[hIdx % oxyIndices.length] : centralIndices[0];
+      const newH = atoms.length;
+      const angle = (hIdx * 135) * Math.PI / 180;
+      atoms.push({
+        symbol: 'H',
+        x: atoms[parent].x + 1.05 * S * Math.cos(angle),
+        y: atoms[parent].y + 1.05 * S * Math.sin(angle),
+        z: (hIdx % 2 === 0 ? 0.5 : -0.5) * S,
+        color: CPK_COLORS['H'],
+        radius: ATOM_RADII['H'] || 12
+      });
+      addBond(parent, newH, 1);
     });
   }
 
   // 3D Physics Relaxation (Spring-Electrical Embedder)
-  // Relaxes bond lengths to natural 1.4 A and pushes apart non-bonded atoms
-  const iterations = 45;
-  const targetDist = 1.4 * S;
+  // Relaxes bond lengths to equilibrium 1.45 A and strongly repels non-bonded atoms
+  // so molecules never huddle, clutter, or swallow bonds!
+  const iterations = 60;
+  const targetDist = 1.45 * S;
   for (let it = 0; it < iterations; it++) {
+    // 1. Non-bonded Steric Repulsion (Inverse-square Coulomb-like repulsion)
     for (let i = 0; i < atoms.length; i++) {
       for (let j = i + 1; j < atoms.length; j++) {
         let dx = atoms[j].x - atoms[i].x;
         let dy = atoms[j].y - atoms[i].y;
         let dz = atoms[j].z - atoms[i].z;
         let d = Math.hypot(dx, dy, dz) || 0.1;
-        if (d < targetDist * 2) {
-          const force = (targetDist * targetDist) / (d * d) * 0.12;
+        if (d < targetDist * 2.5) {
+          const force = ((targetDist * targetDist) / (d * d + 0.1)) * 0.22;
           const fx = (dx / d) * force;
           const fy = (dy / d) * force;
           const fz = (dz / d) * force;
@@ -10745,12 +10996,14 @@ function generateProceduralMolecularStructure(key, S) {
         }
       }
     }
+
+    // 2. Hooke's Law Bond Springs
     bonds.forEach(([i, j]) => {
       let dx = atoms[j].x - atoms[i].x;
       let dy = atoms[j].y - atoms[i].y;
       let dz = atoms[j].z - atoms[i].z;
       let d = Math.hypot(dx, dy, dz) || 0.1;
-      const delta = (d - targetDist) * 0.18;
+      const delta = (d - targetDist) * 0.20;
       const fx = (dx / d) * delta;
       const fy = (dy / d) * delta;
       const fz = (dz / d) * delta;
