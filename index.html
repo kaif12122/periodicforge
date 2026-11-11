@@ -12426,15 +12426,23 @@ function generateProceduralMolecularStructure(key, S) {
 
 /**
  * material-zoom.js
- * Electron Microscope (FE-SEM / Aberration-Corrected STEM) & Multi-Scale Atomic Lattice Explorer
- * Features 4x Ultra-High Polygon Geometries, Anatomically/Physically Accurate Multi-Scale Models,
- * and True Continuous Nested Exponential Microscope Zoom (1x to 10,000,000x).
+ * AAA Real-Time PBR Electron Microscope (FE-SEM / Aberration-Corrected STEM) & Multi-Scale Atomic Explorer
+ *
+ * GRAPHICAL PIPELINE ARCHITECTURE:
+ * 1. Procedural PMREM Studio HDRI Environment Lighting (Softboxes + Cold Rim + Warm Bounce)
+ * 2. Procedural Tangent-Space Micro-Normal & Roughness Texture Synthesizer
+ * 3. Physical Materials with Subsurface Scattering (SSS), Anisotropy, Iridescence, Transmission & Clearcoat
+ * 4. 3-Point Cinematic Shadow-Casting Rig (2048x2048 PCFSoftShadowMap with Acne-Free Bias)
+ * 5. Post-Processing Pipeline (SSAO + UnrealBloom + Chromatic Aberration + Film Grain + ACES Filmic)
+ * 6. 4x Ultra-High Polygon Beveled Geometries & Continuous Nested Exponential Microscope Zoom (1x -> 10,000,000x)
  */
 
 (function() {
   'use strict';
 
-  // High-polygon tessellation constants (4x polygon density over standard primitives)
+  // ===========================================================================
+  // 1. 4x ULTRA-HIGH POLYGON TESSELLATION CONSTANTS
+  // ===========================================================================
   const SEG = {
     sphereHiW: 128,
     sphereHiH: 96,
@@ -12452,10 +12460,13 @@ function generateProceduralMolecularStructure(key, S) {
     boxSeg: 16
   };
 
-  // Stage centers in log10 magnification space (0.0 to 7.0)
+  // Continuous Logarithmic Zoom Stage Centers (10^0 = 1x to 10^7 = 10,000,000x)
   const STAGE_CENTERS = [0.0, 1.4, 2.8, 4.2, 5.6, 7.0];
   const STAGE_KEYS = ['macro', 'closeup', 'micro', 'sem', 'nano', 'atomic'];
 
+  // ===========================================================================
+  // 2. SCIENTIFIC & MULTI-SCALE MATERIAL DATASET
+  // ===========================================================================
   const SUBSTANCES_DATA = {
     water: {
       id: 'water',
@@ -12471,7 +12482,7 @@ function generateProceduralMolecularStructure(key, S) {
           mag: '1x',
           scale: '10 mm',
           title: 'Macroscopic Water Droplet',
-          description: 'A sessile spherical liquid bead resting on a lotus-effect hydrophobic surface, held in minimum surface area equilibrium by cohesive hydrogen-bonding surface tension (72.8 mN/m).'
+          description: 'A sessile spherical liquid bead resting on a hydrophobic lotus-effect surface, held in minimum surface area equilibrium by cohesive hydrogen-bonding surface tension (72.8 mN/m).'
         },
         closeup: {
           mag: '50x',
@@ -12939,6 +12950,419 @@ function generateProceduralMolecularStructure(key, S) {
     }
   };
 
+  // ===========================================================================
+  // 3. PROCEDURAL MICRO-NORMAL, ROUGHNESS & HDRI ENVIRONMENT SYNTHESIZER
+  // ===========================================================================
+  class PBRSurfaceSynthesizer {
+    constructor() {
+      this._cache = {};
+    }
+
+    /**
+     * Generates a procedural Studio HDR-style Equirectangular Environment Map
+     * and converts it via PMREMGenerator for accurate PBR Image-Based Lighting (IBL).
+     */
+    createStudioEnvironment(renderer) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      // Base dark laboratory ambient gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, 512);
+      bgGrad.addColorStop(0.0, '#1e293b');
+      bgGrad.addColorStop(0.45, '#0f172a');
+      bgGrad.addColorStop(0.55, '#090d16');
+      bgGrad.addColorStop(1.0, '#1e1b18');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 1024, 512);
+
+      // Softbox 1: High-Intensity Key Overhead Studio Bank
+      const drawSoftbox = (cx, cy, rx, ry, colorCore, colorEdge) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1, ry / rx);
+        const grad = ctx.createRadialGradient(0, 0, 2, 0, 0, rx);
+        grad.addColorStop(0.0, colorCore);
+        grad.addColorStop(0.45, colorEdge);
+        grad.addColorStop(1.0, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, rx, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      };
+
+      drawSoftbox(280, 115, 160, 85, 'rgba(255,255,255,0.98)', 'rgba(224,242,254,0.45)');
+      drawSoftbox(760, 140, 140, 75, 'rgba(186,230,253,0.92)', 'rgba(56,189,248,0.35)');
+      drawSoftbox(512, 390, 240, 65, 'rgba(254,243,199,0.35)', 'rgba(180,83,9,0.12)');
+      drawSoftbox(110, 250, 95, 180, 'rgba(255,255,255,0.75)', 'rgba(148,163,184,0.15)');
+
+      const envTex = new THREE.CanvasTexture(canvas);
+      envTex.mapping = THREE.EquirectangularReflectionMapping;
+      if ('colorSpace' in envTex) envTex.colorSpace = THREE.SRGBColorSpace;
+
+      if (THREE.PMREMGenerator) {
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        pmrem.compileEquirectangularShader();
+        const target = pmrem.fromEquirectangular(envTex);
+        envTex.dispose();
+        pmrem.dispose();
+        return target.texture;
+      }
+      return envTex;
+    }
+
+    /**
+     * Generates a tangent-space normal map from a procedural height function.
+     * Eliminates flat plastic/toy shading by adding micro-surface detail.
+     */
+    getNormalMap(type = 'micrograin', size = 256, repeat = 4) {
+      const key = `norm_${type}_${size}_${repeat}`;
+      if (this._cache[key]) return this._cache[key];
+
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.createImageData(size, size);
+      const data = imgData.data;
+
+      const heightField = new Float32Array(size * size);
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const u = (x / size) * Math.PI * 2;
+          const v = (y / size) * Math.PI * 2;
+          let h = 0;
+
+          if (type === 'micrograin') {
+            // Isotropic fine mineral/silicon/crystalline micro-roughness
+            h = Math.sin(u * 16 + Math.cos(v * 16)) * 0.35 +
+                Math.cos(u * 34 - v * 28) * 0.25 +
+                Math.sin((u + v) * 48) * 0.15;
+          } else if (type === 'anisotropic_fiber') {
+            // Directional striations for brushed metal, carbon fibre, wool, wood, and grass veins
+            h = Math.sin(u * 48) * 0.65 +
+                Math.cos(u * 96 + Math.sin(v * 6)) * 0.25 +
+                Math.sin(v * 8) * 0.10;
+          } else if (type === 'organic_cell') {
+            // Cellular biological / botanical epidermis micro-topography
+            const cx = Math.sin(u * 6) * Math.cos(v * 6);
+            const cy = Math.cos(u * 12 + v * 12) * 0.25;
+            h = cx * 0.75 + cy;
+          } else if (type === 'woven_twill') {
+            // Diagonal twill weave normal pattern
+            h = Math.sin(u * 12 + v * 12) * 0.5 + Math.cos(u * 12 - v * 12) * 0.5;
+          }
+          heightField[y * size + x] = h;
+        }
+      }
+
+      const strength = 2.4;
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const xLeft = (x - 1 + size) % size;
+          const xRight = (x + 1) % size;
+          const yUp = (y - 1 + size) % size;
+          const yDown = (y + 1) % size;
+
+          const dX = (heightField[y * size + xRight] - heightField[y * size + xLeft]) * strength;
+          const dY = (heightField[yDown * size + x] - heightField[yUp * size + x]) * strength;
+          const dZ = 1.0;
+
+          const invLen = 1.0 / Math.sqrt(dX * dX + dY * dY + dZ * dZ);
+          const nx = ((dX * invLen) * 0.5 + 0.5) * 255;
+          const ny = ((dY * invLen) * 0.5 + 0.5) * 255;
+          const nz = ((dZ * invLen) * 0.5 + 0.5) * 255;
+
+          const idx = (y * size + x) * 4;
+          data[idx] = nx;
+          data[idx + 1] = ny;
+          data[idx + 2] = nz;
+          data[idx + 3] = 255;
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(repeat, repeat);
+      this._cache[key] = texture;
+      return texture;
+    }
+
+    /**
+     * Generates a soft radial sprite texture for atmospheric Tyndall dust / electron field particles.
+     */
+    getParticleSprite() {
+      if (this._cache.particleSprite) return this._cache.particleSprite;
+      const canvas = document.createElement('canvas');
+      canvas.width = 64;
+      canvas.height = 64;
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createRadialGradient(32, 32, 1, 32, 32, 30);
+      grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+      grad.addColorStop(0.35, 'rgba(186, 230, 253, 0.65)');
+      grad.addColorStop(1.0, 'rgba(56, 189, 248, 0.0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+
+      const tex = new THREE.CanvasTexture(canvas);
+      this._cache.particleSprite = tex;
+      return tex;
+    }
+  }
+
+  // ===========================================================================
+  // 4. AAA PBR MATERIAL FACTORY (WITH SUBSURFACE SCATTERING & ANISOTROPY)
+  // ===========================================================================
+  class PBRMaterialFactory {
+    constructor(synthesizer) {
+      this.synth = synthesizer;
+    }
+
+    /**
+     * Creates a calibrated MeshPhysicalMaterial with micro-normal maps, realistic roughness
+     * bounds (0.12–0.75), clearcoat, transmission, and optional GLSL Subsurface Scattering (SSS).
+     */
+    create(config = {}) {
+      const {
+        color = 0xffffff,
+        roughness = 0.32,
+        metalness = 0.0,
+        clearcoat = 0.25,
+        clearcoatRoughness = 0.15,
+        transmission = 0.0,
+        thickness = 1.2,
+        ior = 1.45,
+        attenuationColor = null,
+        attenuationDistance = 2.5,
+        iridescence = 0.0,
+        iridescenceIOR = 1.3,
+        sheen = 0.0,
+        sheenColor = null,
+        sheenRoughness = 0.4,
+        anisotropy = 0.0,
+        emissive = 0x000000,
+        emissiveIntensity = 0.0,
+        opacity = 1.0,
+        transparent = false,
+        side = THREE.FrontSide,
+        normalType = 'micrograin',
+        normalScale = 0.12,
+        normalRepeat = 4,
+        sssStrength = 0.0,
+        sssColor = null
+      } = config;
+
+      const matParams = {
+        color: new THREE.Color(color),
+        roughness: Math.max(0.04, Math.min(0.88, roughness)),
+        metalness: Math.max(0.0, Math.min(1.0, metalness)),
+        clearcoat,
+        clearcoatRoughness,
+        ior,
+        envMapIntensity: 1.35,
+        side
+      };
+
+      if (transmission > 0) {
+        matParams.transmission = transmission;
+        matParams.thickness = thickness;
+        matParams.transparent = true;
+      }
+      if (transparent || opacity < 1.0) {
+        matParams.transparent = true;
+        matParams.opacity = opacity;
+      }
+      if (attenuationColor) {
+        matParams.attenuationColor = new THREE.Color(attenuationColor);
+        matParams.attenuationDistance = attenuationDistance;
+      }
+      if (iridescence > 0) {
+        matParams.iridescence = iridescence;
+        matParams.iridescenceIOR = iridescenceIOR;
+      }
+      if (sheen > 0) {
+        matParams.sheen = sheen;
+        matParams.sheenColor = new THREE.Color(sheenColor || color);
+        matParams.sheenRoughness = sheenRoughness;
+      }
+      if (anisotropy > 0) {
+        matParams.anisotropy = anisotropy;
+      }
+      if (emissiveIntensity > 0) {
+        matParams.emissive = new THREE.Color(emissive);
+        matParams.emissiveIntensity = emissiveIntensity;
+      }
+
+      if (normalType && normalScale > 0) {
+        matParams.normalMap = this.synth.getNormalMap(normalType, 256, normalRepeat);
+        matParams.normalScale = new THREE.Vector2(normalScale, normalScale);
+      }
+
+      const material = new THREE.MeshPhysicalMaterial(matParams);
+
+      // Inject custom GLSL Subsurface Scattering (SSS) wrap-lighting & back-translucency
+      if (sssStrength > 0) {
+        const scatterCol = new THREE.Color(sssColor || color);
+        material.userData.sssStrength = sssStrength;
+        material.userData.sssColor = scatterCol;
+
+        material.onBeforeCompile = (shader) => {
+          shader.uniforms.uSssStrength = { value: sssStrength };
+          shader.uniforms.uSssColor = { value: scatterCol };
+
+          shader.fragmentShader = `
+            uniform float uSssStrength;
+            uniform vec3 uSssColor;
+          ` + shader.fragmentShader;
+
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <lights_fragment_end>',
+            `
+            #include <lights_fragment_end>
+            // Subsurface Scattering (SSS) wrap-around & Fresnel rim translucency approximation
+            vec3 sssViewDir = normalize(vViewPosition);
+            float rimSss = pow(1.0 - saturate(dot(geometryNormal, sssViewDir)), 2.2);
+            reflectedLight.directDiffuse += uSssColor * (rimSss * 0.45 + 0.18) * uSssStrength;
+            reflectedLight.indirectDiffuse += uSssColor * 0.14 * uSssStrength;
+            `
+          );
+        };
+      }
+
+      return material;
+    }
+  }
+
+  // ===========================================================================
+  // 5. CUSTOM POST-PROCESSING PIPELINE (SSAO + BLOOM + CHROMATIC LENS + FILM GRAIN)
+  // ===========================================================================
+  class CinematicPostProcessor {
+    constructor(renderer, scene, camera) {
+      this.renderer = renderer;
+      this.scene = scene;
+      this.camera = camera;
+      this.composer = null;
+      this.customPassUniforms = null;
+      this._initPipeline();
+    }
+
+    _initPipeline() {
+      const width = this.renderer.domElement.clientWidth || window.innerWidth;
+      const height = this.renderer.domElement.clientHeight || window.innerHeight;
+
+      // Path A: Use native Three.js EffectComposer if loaded in window.THREE
+      if (THREE.EffectComposer && THREE.RenderPass && THREE.ShaderPass) {
+        this.composer = new THREE.EffectComposer(this.renderer);
+        const renderPass = new THREE.RenderPass(this.scene, this.camera);
+        this.composer.addPass(renderPass);
+
+        // Optional SSAO Pass for deep contact shadows
+        if (THREE.SSAOPass) {
+          const ssaoPass = new THREE.SSAOPass(this.scene, this.camera, width, height);
+          ssaoPass.kernelRadius = 0.45;
+          ssaoPass.minDistance = 0.001;
+          ssaoPass.maxDistance = 0.08;
+          this.composer.addPass(ssaoPass);
+        }
+
+        // Optional UnrealBloomPass for specular glints and emissive carrier glow
+        if (THREE.UnrealBloomPass) {
+          const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(width, height),
+            0.28, // Subtle strength
+            0.55, // Smooth radius
+            0.82  // High threshold so only specular glints & emissives bloom
+          );
+          this.composer.addPass(bloomPass);
+        }
+
+        // Final Cinematic Lens Pass (Chromatic Aberration + Edge Vignette + Film Grain)
+        const lensShader = this._getCinematicLensShader();
+        const lensPass = new THREE.ShaderPass(lensShader);
+        this.customPassUniforms = lensPass.uniforms;
+        this.composer.addPass(lensPass);
+      }
+    }
+
+    _getCinematicLensShader() {
+      return {
+        uniforms: {
+          tDiffuse: { value: null },
+          uTime: { value: 0.0 },
+          uAberration: { value: 0.0018 },
+          uGrainStrength: { value: 0.022 },
+          uVignette: { value: 0.28 }
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D tDiffuse;
+          uniform float uTime;
+          uniform float uAberration;
+          uniform float uGrainStrength;
+          uniform float uVignette;
+          varying vec2 vUv;
+
+          float hashNoise(vec2 p) {
+            return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+          }
+
+          void main() {
+            vec2 centered = vUv - 0.5;
+            float dist = length(centered);
+
+            // Subtle radial Chromatic Aberration at lens periphery
+            vec2 offset = centered * uAberration * (dist * 1.8);
+            float r = texture2D(tDiffuse, vUv + offset).r;
+            float g = texture2D(tDiffuse, vUv).g;
+            float b = texture2D(tDiffuse, vUv - offset).b;
+            float a = texture2D(tDiffuse, vUv).a;
+            vec3 col = vec3(r, g, b);
+
+            // Subtle optical vignette
+            float vig = smoothstep(0.85, 0.25, dist * uVignette * 2.2);
+            col *= mix(1.0 - uVignette, 1.0, vig);
+
+            // Subtle dynamic film/sensor grain
+            float grain = (hashNoise(vUv * 512.0 + fract(uTime * 0.37)) - 0.5) * uGrainStrength;
+            col = max(vec3(0.0), col + grain);
+
+            gl_FragColor = vec4(col, a);
+          }
+        `
+      };
+    }
+
+    resize(width, height) {
+      if (this.composer) {
+        this.composer.setSize(width, height);
+      }
+    }
+
+    render(timeSeconds) {
+      if (this.customPassUniforms) {
+        this.customPassUniforms.uTime.value = timeSeconds;
+      }
+      if (this.composer) {
+        this.composer.render();
+      } else {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+  }
+
+  // ===========================================================================
+  // 6. MAIN AAA ELECTRON MICROSCOPE EXPLORER ENGINE
+  // ===========================================================================
   class ElectronMicroscopeExplorer {
     constructor() {
       this.container = document.getElementById('material-zoom-viewport');
@@ -12966,7 +13390,9 @@ function generateProceduralMolecularStructure(key, S) {
       this.isDragging = false;
       this.previousPointerPos = { x: 0, y: 0 };
       this.autoRotate = true;
-      this.dynamicAnimatedNodes = [];
+
+      this.surfaceSynth = new PBRSurfaceSynthesizer();
+      this.matFactory = new PBRMaterialFactory(this.surfaceSynth);
 
       this._initThreeScene();
       this._bindEvents();
@@ -12979,9 +13405,10 @@ function generateProceduralMolecularStructure(key, S) {
       const height = this.canvas.clientHeight || window.innerHeight;
 
       this.scene = new THREE.Scene();
-      this.camera = new THREE.PerspectiveCamera(42, width / height, 0.02, 2000);
+      this.camera = new THREE.PerspectiveCamera(40, width / height, 0.02, 2000);
       this.camera.position.set(0, 0, 9.2);
 
+      // WebGLRenderer with ACES Filmic Tonemapping & Soft Shadow Mapping
       this.renderer = new THREE.WebGLRenderer({
         canvas: this.canvas,
         antialias: true,
@@ -12990,28 +13417,61 @@ function generateProceduralMolecularStructure(key, S) {
       });
       this.renderer.setSize(width, height);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      if ('toneMapping' in this.renderer) {
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.1;
+
+      // Filmic / ACES Tonemapping for balanced high dynamic range
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      this.renderer.toneMappingExposure = 1.12;
+      if ('outputColorSpace' in this.renderer) {
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+      } else if ('outputEncoding' in this.renderer) {
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
       }
 
-      // Multi-Point Scientific Studio Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
-      this.scene.add(ambientLight);
+      // High-Resolution Shadow Map Configuration
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-      const keyLight = new THREE.DirectionalLight(0xffffff, 1.45);
-      keyLight.position.set(12, 18, 15);
-      this.scene.add(keyLight);
+      // Real-Time Studio PMREM HDR Environment Map for Specular IBL Reflections
+      this.envMap = this.surfaceSynth.createStudioEnvironment(this.renderer);
+      this.scene.environment = this.envMap;
 
-      const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.75);
-      fillLight.position.set(-14, -10, 10);
-      this.scene.add(fillLight);
+      // -----------------------------------------------------------------------
+      // 3-POINT CINEMATIC LIGHTING RIG + HEMISPHERE BOUNCE
+      // -----------------------------------------------------------------------
+      // 1. Soft Ambient Sky-to-Ground Bounce (HemisphereLight)
+      this.hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x1e1b18, 0.65);
+      this.hemiLight.position.set(0, 20, 0);
+      this.scene.add(this.hemiLight);
 
-      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.65);
-      rimLight.position.set(0, 12, -16);
-      this.scene.add(rimLight);
+      // 2. Primary Key Directional Light (High-Res Shadow Caster with Acne-Free Bias)
+      this.keyLight = new THREE.DirectionalLight(0xfffbeb, 2.15);
+      this.keyLight.position.set(8, 12, 10);
+      this.keyLight.castShadow = true;
+      this.keyLight.shadow.mapSize.width = 2048;
+      this.keyLight.shadow.mapSize.height = 2048;
+      this.keyLight.shadow.camera.near = 0.5;
+      this.keyLight.shadow.camera.far = 40;
+      const d = 6.5;
+      this.keyLight.shadow.camera.left = -d;
+      this.keyLight.shadow.camera.right = d;
+      this.keyLight.shadow.camera.top = d;
+      this.keyLight.shadow.camera.bottom = -d;
+      this.keyLight.shadow.bias = -0.0004;
+      this.keyLight.shadow.normalBias = 0.025;
+      this.keyLight.shadow.radius = 2.5;
+      this.scene.add(this.keyLight);
+
+      // 3. Cool Fill Light (Softens shadow terminator)
+      this.fillLight = new THREE.DirectionalLight(0x93c5fd, 0.85);
+      this.fillLight.position.set(-12, -6, 8);
+      this.scene.add(this.fillLight);
+
+      // 4. High-Contrast Rim / Back Specular Kicker Light
+      this.rimLight = new THREE.SpotLight(0x38bdf8, 1.95);
+      this.rimLight.position.set(0, 10, -14);
+      this.rimLight.angle = Math.PI / 3;
+      this.rimLight.penumbra = 0.8;
+      this.scene.add(this.rimLight);
 
       // Root pivot group
       this.rootGroup = new THREE.Group();
@@ -13033,18 +13493,92 @@ function generateProceduralMolecularStructure(key, S) {
         this.nanoGroup,
         this.atomicGroup
       ];
-
       this.stageGroups.forEach(g => this.rootGroup.add(g));
+
+      // Atmospheric Tyndall Dust / Electron Beam Quantum Particle System
+      this._initAtmosphericParticles();
+
+      // Initialize Post-Processing Pipeline
+      this.postProcessor = new CinematicPostProcessor(this.renderer, this.scene, this.camera);
 
       // Start render loop
       this.isRunning = true;
       const animate = (time) => {
         if (!this.isRunning) return;
         requestAnimationFrame(animate);
-        this._update(time);
-        this.renderer.render(this.scene, this.camera);
+        const timeSec = (time || 0) * 0.001;
+        this._update(timeSec);
+        this.postProcessor.render(timeSec);
       };
       requestAnimationFrame(animate);
+    }
+
+    /**
+     * Adds a subtle 3D floating Tyndall micro-dust / sub-atomic quantum field particle system
+     * that grounds the specimen in volumetric space across all zoom scales.
+     */
+    _initAtmosphericParticles() {
+      const count = 220;
+      const geom = new THREE.BufferGeometry();
+      const positions = new Float32Array(count * 3);
+      const scales = new Float32Array(count);
+
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 14.0;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 14.0;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 10.0;
+        scales[i] = 0.4 + Math.random() * 0.8;
+      }
+
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geom.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
+
+      const mat = new THREE.PointsMaterial({
+        color: 0xbae6fd,
+        size: 0.08,
+        map: this.surfaceSynth.getParticleSprite(),
+        transparent: true,
+        opacity: 0.32,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      });
+
+      this.particleSystem = new THREE.Points(geom, mat);
+      this.scene.add(this.particleSystem);
+    }
+
+    /**
+     * Creates a high-polygon BoxGeometry with micro-beveled edges and smooth normals
+     * so every corner catches realistic specular highlights instead of looking knife-edge flat.
+     */
+    _createBeveledBoxGeometry(w, h, d, bevel = 0.035, segs = 12) {
+      const geom = new THREE.BoxGeometry(w, h, d, segs, segs, segs);
+      const pos = geom.attributes.position;
+      const halfW = Math.max(0.001, w * 0.5 - bevel);
+      const halfH = Math.max(0.001, h * 0.5 - bevel);
+      const halfD = Math.max(0.001, d * 0.5 - bevel);
+
+      for (let i = 0; i < pos.count; i++) {
+        const vx = pos.getX(i);
+        const vy = pos.getY(i);
+        const vz = pos.getZ(i);
+
+        const cx = Math.max(-halfW, Math.min(halfW, vx));
+        const cy = Math.max(-halfH, Math.min(halfH, vy));
+        const cz = Math.max(-halfD, Math.min(halfD, vz));
+
+        const dx = vx - cx;
+        const dy = vy - cy;
+        const dz = vz - cz;
+        const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        if (len > 0.0001) {
+          const factor = Math.min(bevel, len) / len;
+          pos.setXYZ(i, cx + dx * factor, cy + dy * factor, cz + dz * factor);
+        }
+      }
+      geom.computeVertexNormals();
+      return geom;
     }
 
     _bindEvents() {
@@ -13173,7 +13707,7 @@ function generateProceduralMolecularStructure(key, S) {
       }
 
       this._buildSubstance3D(subKey);
-      this._prepareStageMaterials();
+      this._prepareStageMaterialsAndShadows();
       this._updateHUD();
     }
 
@@ -13192,25 +13726,29 @@ function generateProceduralMolecularStructure(key, S) {
     }
 
     /**
-     * Clones materials per stage and stores base opacity/transmission so continuous
-     * cross-fade and fly-through transparency work seamlessly without mutating shared materials.
+     * Enables shadow casting/receiving on all meshes and caches base material opacity
+     * for smooth continuous nested zoom cross-fading.
      */
-    _prepareStageMaterials() {
+    _prepareStageMaterialsAndShadows() {
       this.stageGroups.forEach((group) => {
         group.traverse((obj) => {
-          if (obj.isMesh && obj.material) {
-            if (Array.isArray(obj.material)) {
-              obj.material = obj.material.map(m => {
+          if (obj.isMesh) {
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+
+            if (obj.material) {
+              const prepMat = (m) => {
                 const cloned = m.clone();
-                cloned.userData.baseOpacity = cloned.opacity !== undefined ? cloned.opacity : 1.0;
-                cloned.userData.wasTransparent = cloned.transparent || false;
+                if (m.onBeforeCompile) cloned.onBeforeCompile = m.onBeforeCompile;
+                cloned.userData = Object.assign({}, m.userData, {
+                  baseOpacity: cloned.opacity !== undefined ? cloned.opacity : 1.0,
+                  wasTransparent: cloned.transparent || false
+                });
                 return cloned;
-              });
-            } else {
-              const cloned = obj.material.clone();
-              cloned.userData.baseOpacity = cloned.opacity !== undefined ? cloned.opacity : 1.0;
-              cloned.userData.wasTransparent = cloned.transparent || false;
-              obj.material = cloned;
+              };
+              obj.material = Array.isArray(obj.material)
+                ? obj.material.map(prepMat)
+                : prepMat(obj.material);
             }
           }
         });
@@ -13218,7 +13756,6 @@ function generateProceduralMolecularStructure(key, S) {
     }
 
     _buildSubstance3D(subKey) {
-      this.dynamicAnimatedNodes = [];
       this.stageGroups.forEach(g => this._clearGroup(g));
 
       switch (subKey) {
@@ -13256,9 +13793,24 @@ function generateProceduralMolecularStructure(key, S) {
     }
 
     // =========================================================================
-    // 1. Water (H₂O) — 4x High-Poly + Continuous Nested Hierarchy
+    // 1. Water (H₂O) — Refractive IOR 1.333 + Attenuation + Cryo-Ice + sp³ Orbitals
     // =========================================================================
     _buildWaterMeshes() {
+      const waterMat = this.matFactory.create({
+        color: 0x38bdf8,
+        roughness: 0.04,
+        metalness: 0.0,
+        transmission: 0.94,
+        thickness: 2.8,
+        ior: 1.333,
+        attenuationColor: 0x0284c7,
+        attenuationDistance: 2.2,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02,
+        normalType: 'micrograin',
+        normalScale: 0.03
+      });
+
       // STAGE 0 (Macro): Sessile Water Droplet on Hydrophobic Lotus Micro-Pillar Leaf Surface
       const dropGeom = new THREE.SphereGeometry(2.15, SEG.sphereHiW, SEG.sphereHiH);
       const posAttr = dropGeom.attributes.position;
@@ -13266,7 +13818,6 @@ function generateProceduralMolecularStructure(key, S) {
         let x = posAttr.getX(i);
         let y = posAttr.getY(i);
         let z = posAttr.getZ(i);
-        // Flatten bottom contact meniscus & add subtle surface tension profile
         if (y < -0.5) {
           const flatten = Math.max(-1.45, y * 0.68);
           const radialBulge = 1.0 + Math.abs(y + 0.5) * 0.08;
@@ -13277,67 +13828,50 @@ function generateProceduralMolecularStructure(key, S) {
         posAttr.setXYZ(i, x, y, z);
       }
       dropGeom.computeVertexNormals();
+      this.macroGroup.add(new THREE.Mesh(dropGeom, waterMat));
 
-      const dropMat = new THREE.MeshPhysicalMaterial({
-        color: 0x38bdf8,
-        metalness: 0.02,
-        roughness: 0.03,
-        transmission: 0.92,
-        transparent: true,
-        opacity: 0.95,
-        ior: 1.333,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.02
+      const subMat = this.matFactory.create({
+        color: 0x0f172a,
+        roughness: 0.55,
+        metalness: 0.15,
+        clearcoat: 0.2,
+        normalType: 'organic_cell',
+        normalScale: 0.18
       });
-      this.macroGroup.add(new THREE.Mesh(dropGeom, dropMat));
-
-      // Hydrophobic substrate plate with micro-papillae
-      const subMat = new THREE.MeshPhysicalMaterial({ color: 0x0f172a, roughness: 0.6, metalness: 0.1 });
-      const baseDisk = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 0.18, SEG.cylRadialHi), subMat);
+      const baseDisk = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 0.22, SEG.cylRadialHi), subMat);
       baseDisk.position.y = -1.55;
       this.macroGroup.add(baseDisk);
 
-      // Satellite micro-droplets around main bead
       for (let i = 0; i < 14; i++) {
         const a = (i / 14) * Math.PI * 2;
         const r = 2.55 + (i % 3) * 0.25;
-        const sat = new THREE.Mesh(new THREE.SphereGeometry(0.12 + (i % 3) * 0.04, 48, 36), dropMat);
+        const sat = new THREE.Mesh(new THREE.SphereGeometry(0.12 + (i % 3) * 0.04, 48, 36), waterMat);
         sat.position.set(Math.cos(a) * r, -1.38, Math.sin(a) * r);
         this.macroGroup.add(sat);
       }
 
-      // STAGE 1 (Close-up): Three-Phase Meniscus Contact Rim, Caustic Ring & Micro-Condensation
+      // STAGE 1 (Close-up): Three-Phase Meniscus Contact Rim & Micro-Condensation
       const rimGroup = new THREE.Group();
-      const rimGeom = new THREE.TorusGeometry(2.1, 0.38, SEG.torusRadial, SEG.torusTubular);
-      const rimMat = new THREE.MeshPhysicalMaterial({
-        color: 0x0284c7,
-        transmission: 0.86,
-        transparent: true,
-        opacity: 0.92,
-        roughness: 0.04,
-        clearcoat: 1.0
-      });
-      const mainRim = new THREE.Mesh(rimGeom, rimMat);
+      const mainRim = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.38, SEG.torusRadial, SEG.torusTubular), waterMat);
       mainRim.rotation.x = Math.PI / 2;
       rimGroup.add(mainRim);
 
-      // Inner refractive dome cap
       const meniscusCap = new THREE.Mesh(
         new THREE.SphereGeometry(2.05, SEG.sphereHiW, SEG.sphereHiH, 0, Math.PI * 2, 0, Math.PI * 0.5),
-        dropMat
+        waterMat
       );
       meniscusCap.scale.set(1, 0.45, 1);
       rimGroup.add(meniscusCap);
 
       for (let i = 0; i < 24; i++) {
         const angle = (i / 24) * Math.PI * 2;
-        const bead = new THREE.Mesh(new THREE.SphereGeometry(0.14 + (i % 4) * 0.03, 64, 48), dropMat);
+        const bead = new THREE.Mesh(new THREE.SphereGeometry(0.14 + (i % 4) * 0.03, 64, 48), waterMat);
         bead.position.set(Math.cos(angle) * 2.55, (i % 2) * 0.08 - 0.1, Math.sin(angle) * 2.55);
         rimGroup.add(bead);
       }
       this.closeupGroup.add(rimGroup);
 
-      // STAGE 2 (Micro): High-Poly Displaced Capillary Wave Interference Field + Diffusion Tracers
+      // STAGE 2 (Micro): High-Poly Displaced Capillary Wave Interference Field
       const waveGeom = new THREE.PlaneGeometry(5.2, 5.2, 160, 160);
       waveGeom.rotateX(-Math.PI / 2);
       const wPos = waveGeom.attributes.position;
@@ -13351,62 +13885,53 @@ function generateProceduralMolecularStructure(key, S) {
         wPos.setY(i, y);
       }
       waveGeom.computeVertexNormals();
-      const waveMat = new THREE.MeshPhysicalMaterial({
+      const waveMat = this.matFactory.create({
         color: 0x0ea5e9,
         roughness: 0.06,
-        transmission: 0.82,
-        transparent: true,
-        opacity: 0.9,
-        clearcoat: 1.0,
-        side: THREE.DoubleSide
+        transmission: 0.88,
+        thickness: 1.5,
+        ior: 1.333,
+        side: THREE.DoubleSide,
+        normalType: 'micrograin',
+        normalScale: 0.06
       });
       this.microGroup.add(new THREE.Mesh(waveGeom, waveMat));
 
-      // Subsurface diffusing micro-clusters
-      const tracerMat = new THREE.MeshPhysicalMaterial({ color: 0xbae6fd, transmission: 0.7, clearcoat: 1.0 });
-      for (let i = 0; i < 32; i++) {
-        const sp = new THREE.Mesh(new THREE.SphereGeometry(0.09, 48, 36), tracerMat);
-        sp.position.set((Math.random() - 0.5) * 3.8, -0.35 - Math.random() * 1.1, (Math.random() - 0.5) * 3.8);
-        this.microGroup.add(sp);
-      }
-
       // STAGE 3 (FE-SEM): Cryo-SEM Vitreous Ice Matrix + Hexagonal Ice (Ih) Dendrite Crystal
       const semGroup = new THREE.Group();
-      const hexCrystalMat = new THREE.MeshPhysicalMaterial({
+      const hexCrystalMat = this.matFactory.create({
         color: 0xe0f2fe,
-        roughness: 0.12,
-        metalness: 0.1,
-        transmission: 0.65,
-        transparent: true,
-        opacity: 0.92,
-        clearcoat: 1.0
+        roughness: 0.18,
+        transmission: 0.72,
+        thickness: 1.8,
+        ior: 1.31,
+        clearcoat: 1.0,
+        sssStrength: 0.4,
+        sssColor: 0x38bdf8,
+        normalType: 'micrograin',
+        normalScale: 0.15
       });
-      // Central hexagonal prism ice nucleus
-      const hexCore = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.55, 6, 16), hexCrystalMat);
-      semGroup.add(hexCore);
-      // 6 dendritic branches
+      semGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.55, 6, 16), hexCrystalMat));
       for (let b = 0; b < 6; b++) {
         const a = (b / 6) * Math.PI * 2;
-        const arm = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.36, 2.2, 8, 8, 16), hexCrystalMat);
+        const arm = new THREE.Mesh(this._createBeveledBoxGeometry(0.28, 0.36, 2.2, 0.04, 10), hexCrystalMat);
         arm.position.set(Math.cos(a) * 1.35, 0, Math.sin(a) * 1.35);
         arm.rotation.y = -a + Math.PI / 2;
         semGroup.add(arm);
       }
-      // Surrounding vitreous amorphous ice nodules
-      const vitMat = new THREE.MeshPhysicalMaterial({ color: 0x7dd3fc, roughness: 0.25, transmission: 0.5, transparent: true, opacity: 0.85 });
-      for (let i = 0; i < 22; i++) {
-        const a = (i / 22) * Math.PI * 2;
+      for (let i = 0; i < 20; i++) {
+        const a = (i / 20) * Math.PI * 2;
         const rad = 1.9 + (i % 3) * 0.45;
-        const vit = new THREE.Mesh(new THREE.IcosahedronGeometry(0.34, 4), vitMat);
-        vit.position.set(Math.cos(a) * rad, (Math.sin(i * 2.1) * 0.6), Math.sin(a) * rad);
+        const vit = new THREE.Mesh(new THREE.IcosahedronGeometry(0.34, 4), hexCrystalMat);
+        vit.position.set(Math.cos(a) * rad, Math.sin(i * 2.1) * 0.6, Math.sin(a) * rad);
         semGroup.add(vit);
       }
       this.semGroup.add(semGroup);
 
-      // STAGE 4 (Nano): 3D Tetrahedral Hydrogen-Bonded Water Cage Network (17 H2O Molecules)
+      // STAGE 4 (Nano): 3D Tetrahedral Hydrogen-Bonded Water Cage Network
       const nanoGroup = new THREE.Group();
-      const oMat = new THREE.MeshPhysicalMaterial({ color: 0xff2a55, roughness: 0.12, metalness: 0.08, clearcoat: 1.0 });
-      const hMat = new THREE.MeshPhysicalMaterial({ color: 0xf8fafc, roughness: 0.18, clearcoat: 1.0 });
+      const oMat = this.matFactory.create({ color: 0xff2a55, roughness: 0.18, metalness: 0.1, clearcoat: 1.0, sssStrength: 0.3 });
+      const hMat = this.matFactory.create({ color: 0xf8fafc, roughness: 0.22, clearcoat: 0.9, sssStrength: 0.3 });
       const oGeom = new THREE.SphereGeometry(0.32, SEG.sphereMedW, SEG.sphereMedH);
       const hGeom = new THREE.SphereGeometry(0.19, SEG.sphereMedW, SEG.sphereMedH);
 
@@ -13421,9 +13946,7 @@ function generateProceduralMolecularStructure(key, S) {
         new THREE.Vector3(0, 2.2, -2.2),
         new THREE.Vector3(0, -2.2, -2.2),
         new THREE.Vector3(2.2, 2.2, 0),
-        new THREE.Vector3(-2.2, -2.2, 0),
-        new THREE.Vector3(-2.2, 2.2, 0),
-        new THREE.Vector3(2.2, -2.2, 0)
+        new THREE.Vector3(-2.2, -2.2, 0)
       ];
 
       cageCoords.forEach((pos, idx) => {
@@ -13431,7 +13954,6 @@ function generateProceduralMolecularStructure(key, S) {
         oMesh.position.copy(pos);
         nanoGroup.add(oMesh);
 
-        // Two covalently attached Hydrogens per H2O molecule
         const h1Dir = new THREE.Vector3(Math.cos(idx * 1.7), Math.sin(idx * 1.3), 0.5).normalize();
         const h2Dir = new THREE.Vector3(-Math.sin(idx * 1.1), Math.cos(idx * 2.1), -0.5).normalize();
         [h1Dir, h2Dir].forEach(d => {
@@ -13443,7 +13965,6 @@ function generateProceduralMolecularStructure(key, S) {
         });
       });
 
-      // Dotted Hydrogen Bonds connecting tetrahedral neighbors
       for (let i = 0; i < cageCoords.length; i++) {
         for (let j = i + 1; j < cageCoords.length; j++) {
           if (cageCoords[i].distanceTo(cageCoords[j]) < 2.25) {
@@ -13453,15 +13974,14 @@ function generateProceduralMolecularStructure(key, S) {
       }
       this.nanoGroup.add(nanoGroup);
 
-      // STAGE 5 (Atomic): Ultra-High-Poly H₂O with 104.5° Bond Angle, sp³ Lone Pair Lobes & Electron Density
+      // STAGE 5 (Atomic): Bent H₂O (104.5°) with sp³ Lone Pair Orbitals & Electron Cloud
       const atomicGroup = new THREE.Group();
       const highO = new THREE.Mesh(new THREE.SphereGeometry(0.92, SEG.sphereHiW, SEG.sphereHiH), oMat);
       atomicGroup.add(highO);
 
-      // Electrostatic δ- potential shell around Oxygen
       const oCloud = new THREE.Mesh(
         new THREE.SphereGeometry(1.25, SEG.sphereMedW, SEG.sphereMedH),
-        new THREE.MeshPhysicalMaterial({ color: 0xff2a55, transparent: true, opacity: 0.24, roughness: 0.08, clearcoat: 1.0 })
+        this.matFactory.create({ color: 0xff2a55, transmission: 0.75, opacity: 0.28, transparent: true, roughness: 0.1 })
       );
       highO.add(oCloud);
 
@@ -13477,14 +13997,14 @@ function generateProceduralMolecularStructure(key, S) {
         this._addCovalentBond(atomicGroup, new THREE.Vector3(0, 0, 0), hp, 0xff2a55, 0xf8fafc);
       });
 
-      // Two tetrahedral sp³ non-bonding lone-pair orbitals (translucent tear-drop lobes)
-      const lonePairMat = new THREE.MeshPhysicalMaterial({
+      const lonePairMat = this.matFactory.create({
         color: 0x38bdf8,
+        transmission: 0.75,
         transparent: true,
-        opacity: 0.38,
-        transmission: 0.65,
-        roughness: 0.1,
-        clearcoat: 1.0
+        opacity: 0.42,
+        roughness: 0.12,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.25
       });
       [new THREE.Vector3(0, 0.85, 0.95), new THREE.Vector3(0, 0.85, -0.95)].forEach(lpDir => {
         const lobeGeom = new THREE.SphereGeometry(0.52, SEG.sphereMedW, SEG.sphereMedH);
@@ -13499,11 +14019,30 @@ function generateProceduralMolecularStructure(key, S) {
     }
 
     // =========================================================================
-    // 2. Wool Sweater — Interlocking Knit -> Overlapping Cuticle Scales -> Coiled-Coil -> Cystine
+    // 2. Wool Sweater — Sheen + Subsurface Scattering + Keratin Cuticle Scales
     // =========================================================================
     _buildWoolMeshes() {
-      const yarnMat = new THREE.MeshPhysicalMaterial({ color: 0xd97706, roughness: 0.78, metalness: 0.04, sheen: 0.8 });
-      const yarnAltMat = new THREE.MeshPhysicalMaterial({ color: 0xb45309, roughness: 0.80, metalness: 0.04 });
+      const yarnMat = this.matFactory.create({
+        color: 0xd97706,
+        roughness: 0.65,
+        sheen: 0.95,
+        sheenColor: 0xfef08a,
+        sheenRoughness: 0.35,
+        sssStrength: 0.45,
+        sssColor: 0xf59e0b,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.22
+      });
+      const yarnAltMat = this.matFactory.create({
+        color: 0xb45309,
+        roughness: 0.68,
+        sheen: 0.9,
+        sheenColor: 0xfde68a,
+        sssStrength: 0.4,
+        sssColor: 0xd97706,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.22
+      });
 
       // STAGE 0 (Macro): True 3D Interlocking Stockinette Knitted Loops
       const macroGroup = new THREE.Group();
@@ -13514,13 +14053,13 @@ function generateProceduralMolecularStructure(key, S) {
           const loopPts = [];
           for (let t = 0; t <= 1.0; t += 0.04) {
             const u = t * Math.PI * 2;
-            const lx = x0 + Math.sin(u) * 0.58 + Math.sin(u * 2) * 0.12;
-            const ly = y0 - Math.cos(u) * 0.55;
-            const lz = Math.cos(u * 2) * 0.22;
-            loopPts.push(new THREE.Vector3(lx, ly, lz));
+            loopPts.push(new THREE.Vector3(
+              x0 + Math.sin(u) * 0.58 + Math.sin(u * 2) * 0.12,
+              y0 - Math.cos(u) * 0.55,
+              Math.cos(u * 2) * 0.22
+            ));
           }
-          const curve = new THREE.CatmullRomCurve3(loopPts);
-          const tubeGeom = new THREE.TubeGeometry(curve, 128, 0.16, 36, false);
+          const tubeGeom = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(loopPts), 128, 0.16, 36, false);
           macroGroup.add(new THREE.Mesh(tubeGeom, (row + col) % 2 === 0 ? yarnMat : yarnAltMat));
         }
       }
@@ -13538,116 +14077,70 @@ function generateProceduralMolecularStructure(key, S) {
         const plyGeom = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(plyPts), SEG.tubeTubular, 0.34, SEG.tubeRadial, false);
         closeupGroup.add(new THREE.Mesh(plyGeom, p % 2 === 0 ? yarnMat : yarnAltMat));
       }
-      // Fine crimped surface halo hairs
-      for (let h = 0; h < 18; h++) {
-        const hPts = [];
-        const hPhase = (h / 18) * Math.PI * 2;
-        for (let y = -2.6; y <= 2.6; y += 0.15) {
-          const a = y * 3.1 + hPhase;
-          const r = 0.88 + Math.sin(y * 6 + h) * 0.18;
-          hPts.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r));
-        }
-        const haloMesh = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(hPts), 96, 0.035, 16, false), yarnMat);
-        closeupGroup.add(haloMesh);
-      }
       this.closeupGroup.add(closeupGroup);
 
       // STAGE 2 (Micro): Single Wool Fiber Shaft Armored with Overlapping Cuticle Scales
       const microGroup = new THREE.Group();
-      const cortexMat = new THREE.MeshPhysicalMaterial({ color: 0x92400e, roughness: 0.55, clearcoat: 0.3 });
-      const scaleMat = new THREE.MeshPhysicalMaterial({
+      const cortexMat = this.matFactory.create({ color: 0x92400e, roughness: 0.48, sssStrength: 0.35 });
+      const scaleMat = this.matFactory.create({
         color: 0xf59e0b,
-        roughness: 0.42,
+        roughness: 0.35,
         clearcoat: 0.65,
-        transparent: true,
-        opacity: 0.94
+        sssStrength: 0.5,
+        sssColor: 0xfde68a,
+        side: THREE.DoubleSide
       });
       microGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.78, 5.2, SEG.cylRadialHi, SEG.cylHeightSeg), cortexMat));
 
-      // Overlapping roof-shingle cuticle scales
       for (let y = -2.2; y <= 2.2; y += 0.38) {
-        const scaleRing = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.89, 0.79, 0.44, SEG.cylRadialHi, 8, true),
-          scaleMat
-        );
+        const scaleRing = new THREE.Mesh(new THREE.CylinderGeometry(0.89, 0.79, 0.44, SEG.cylRadialHi, 8, true), scaleMat);
         scaleRing.position.y = y;
         scaleRing.rotation.y = y * 1.4;
         microGroup.add(scaleRing);
       }
       this.microGroup.add(microGroup);
 
-      // STAGE 3 (FE-SEM): Ortho/Para-Cortical Cell Cross-Section Packed with Macrofibrils
+      // STAGE 3 (FE-SEM): Cortical Cell Cross-Section Packed with Macrofibrils
       const semGroup = new THREE.Group();
-      const cellSheathMat = new THREE.MeshPhysicalMaterial({
-        color: 0x78350f,
-        roughness: 0.5,
-        transparent: true,
-        opacity: 0.55,
-        side: THREE.DoubleSide
-      });
-      semGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 4.4, SEG.cylRadialHi, 12, true), cellSheathMat));
-
-      const macroFibrilMat = new THREE.MeshPhysicalMaterial({ color: 0xd97706, roughness: 0.35, clearcoat: 0.75 });
-      const microFibrilMat = new THREE.MeshPhysicalMaterial({ color: 0xfde68a, roughness: 0.25 });
+      semGroup.add(new THREE.Mesh(
+        new THREE.CylinderGeometry(2.1, 2.1, 4.4, SEG.cylRadialHi, 12, true),
+        this.matFactory.create({ color: 0x78350f, roughness: 0.5, transparent: true, opacity: 0.55, side: THREE.DoubleSide })
+      ));
       for (let ring = 0; ring < 3; ring++) {
         const count = ring === 0 ? 1 : ring * 6;
         const rad = ring * 0.68;
         for (let i = 0; i < count; i++) {
           const a = (i / count) * Math.PI * 2;
-          const mx = Math.cos(a) * rad;
-          const mz = Math.sin(a) * rad;
-          const mf = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 4.4, SEG.cylRadialMed, 12), macroFibrilMat);
-          mf.position.set(mx, 0, mz);
+          const mf = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 4.4, SEG.cylRadialMed, 12), yarnMat);
+          mf.position.set(Math.cos(a) * rad, 0, Math.sin(a) * rad);
           semGroup.add(mf);
-
-          // Internal protofibril dots on top cross-section
-          for (let k = 0; k < 6; k++) {
-            const ka = (k / 6) * Math.PI * 2;
-            const pf = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 4.5, 24), microFibrilMat);
-            pf.position.set(mx + Math.cos(ka) * 0.14, 0, mz + Math.sin(ka) * 0.14);
-            semGroup.add(pf);
-          }
         }
       }
       this.semGroup.add(semGroup);
 
       // STAGE 4 (Nano): Double Coiled-Coil α-Helix Polypeptide Dimers + Disulfide Cross-Rungs
       const nanoGroup = new THREE.Group();
-      const helixMatA = new THREE.MeshPhysicalMaterial({ color: 0xf59e0b, roughness: 0.22, clearcoat: 0.9 });
-      const helixMatB = new THREE.MeshPhysicalMaterial({ color: 0xfbbf24, roughness: 0.22, clearcoat: 0.9 });
       const ptsA = [];
       const ptsB = [];
       for (let t = -Math.PI * 4; t <= Math.PI * 4; t += 0.12) {
         const y = t * 0.22;
-        const r = 0.65;
-        ptsA.push(new THREE.Vector3(Math.cos(t) * r, y, Math.sin(t) * r));
-        ptsB.push(new THREE.Vector3(Math.cos(t + Math.PI) * r, y, Math.sin(t + Math.PI) * r));
+        ptsA.push(new THREE.Vector3(Math.cos(t) * 0.65, y, Math.sin(t) * 0.65));
+        ptsB.push(new THREE.Vector3(Math.cos(t + Math.PI) * 0.65, y, Math.sin(t + Math.PI) * 0.65));
       }
-      nanoGroup.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ptsA), SEG.tubeTubular, 0.16, SEG.tubeRadial, false), helixMatA));
-      nanoGroup.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ptsB), SEG.tubeTubular, 0.16, SEG.tubeRadial, false), helixMatB));
+      nanoGroup.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ptsA), SEG.tubeTubular, 0.16, SEG.tubeRadial, false), scaleMat));
+      nanoGroup.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ptsB), SEG.tubeTubular, 0.16, SEG.tubeRadial, false), yarnMat));
 
-      // Yellow disulfide (-S-S-) crosslink bridges between the two alpha-helices
-      const sBridgeMat = new THREE.MeshPhysicalMaterial({ color: 0xfacc15, metalness: 0.35, roughness: 0.15, clearcoat: 1.0 });
       for (let idx = 8; idx < ptsA.length - 8; idx += 14) {
-        const pA = ptsA[idx];
-        const pB = ptsB[idx];
-        const mid = pA.clone().add(pB).multiplyScalar(0.5);
-        const s1 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 48, 36), sBridgeMat);
-        const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 48, 36), sBridgeMat);
-        s1.position.copy(pA.clone().lerp(mid, 0.65));
-        s2.position.copy(pB.clone().lerp(mid, 0.65));
-        nanoGroup.add(s1, s2);
-        this._addCovalentBond(nanoGroup, pA, pB, 0xfacc15, 0xfacc15);
+        this._addCovalentBond(nanoGroup, ptsA[idx], ptsB[idx], 0xfacc15, 0xfacc15);
       }
       this.nanoGroup.add(nanoGroup);
 
-      // STAGE 5 (Atomic): Complete Cystine Disulfide Crosslink Bridge (-CH2-S-S-CH2-) + Peptide Backbone
+      // STAGE 5 (Atomic): Complete Cystine Disulfide Crosslink Bridge (-CH2-S-S-CH2-)
       const atomicGroup = new THREE.Group();
-      const sMat = new THREE.MeshPhysicalMaterial({ color: 0xfacc15, roughness: 0.15, metalness: 0.25, clearcoat: 1.0 });
-      const cMat = new THREE.MeshPhysicalMaterial({ color: 0x334155, roughness: 0.22, clearcoat: 0.9 });
-      const nMat = new THREE.MeshPhysicalMaterial({ color: 0x3b82f6, roughness: 0.2, clearcoat: 0.9 });
-      const oMat = new THREE.MeshPhysicalMaterial({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
-      const hMat = new THREE.MeshPhysicalMaterial({ color: 0xf8fafc, roughness: 0.2, clearcoat: 1.0 });
+      const sMat = this.matFactory.create({ color: 0xfacc15, roughness: 0.18, metalness: 0.25, clearcoat: 1.0 });
+      const cMat = this.matFactory.create({ color: 0x334155, roughness: 0.24, clearcoat: 0.9 });
+      const nMat = this.matFactory.create({ color: 0x3b82f6, roughness: 0.22, clearcoat: 0.9 });
+      const oMat = this.matFactory.create({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
 
       const s1Pos = new THREE.Vector3(-0.82, 0.15, 0.25);
       const s2Pos = new THREE.Vector3(0.82, -0.15, -0.25);
@@ -13656,11 +14149,9 @@ function generateProceduralMolecularStructure(key, S) {
       const ca1Pos = new THREE.Vector3(-2.65, 0.25, -0.85);
       const ca2Pos = new THREE.Vector3(2.65, -0.25, 0.85);
       const n1Pos = new THREE.Vector3(-3.35, -0.65, -0.1);
-      const cCarb1Pos = new THREE.Vector3(-2.95, 0.95, -2.0);
-      const oCarb1Pos = new THREE.Vector3(-2.4, 1.95, -2.3);
       const n2Pos = new THREE.Vector3(3.35, 0.65, 0.1);
-      const cCarb2Pos = new THREE.Vector3(2.95, -0.95, 2.0);
-      const oCarb2Pos = new THREE.Vector3(2.4, -1.95, 2.3);
+      const o1Pos = new THREE.Vector3(-2.4, 1.95, -1.8);
+      const o2Pos = new THREE.Vector3(2.4, -1.95, 1.8);
 
       const addAtom = (pos, rad, mat) => {
         const m = new THREE.Mesh(new THREE.SphereGeometry(rad, SEG.sphereAtomW, SEG.sphereAtomH), mat);
@@ -13676,12 +14167,8 @@ function generateProceduralMolecularStructure(key, S) {
       addAtom(ca2Pos, 0.56, cMat);
       addAtom(n1Pos, 0.54, nMat);
       addAtom(n2Pos, 0.54, nMat);
-      addAtom(cCarb1Pos, 0.54, cMat);
-      addAtom(cCarb2Pos, 0.54, cMat);
-      addAtom(oCarb1Pos, 0.50, oMat);
-      addAtom(oCarb2Pos, 0.50, oMat);
-      addAtom(cb1Pos.clone().add(new THREE.Vector3(-0.3, 0.8, 0.4)), 0.32, hMat);
-      addAtom(cb2Pos.clone().add(new THREE.Vector3(0.3, -0.8, -0.4)), 0.32, hMat);
+      addAtom(o1Pos, 0.50, oMat);
+      addAtom(o2Pos, 0.50, oMat);
 
       this._addCovalentBond(atomicGroup, s1Pos, s2Pos, 0xfacc15, 0xfacc15);
       this._addCovalentBond(atomicGroup, s1Pos, cb1Pos, 0xfacc15, 0x334155);
@@ -13690,19 +14177,43 @@ function generateProceduralMolecularStructure(key, S) {
       this._addCovalentBond(atomicGroup, cb2Pos, ca2Pos, 0x334155, 0x334155);
       this._addCovalentBond(atomicGroup, ca1Pos, n1Pos, 0x334155, 0x3b82f6);
       this._addCovalentBond(atomicGroup, ca2Pos, n2Pos, 0x334155, 0x3b82f6);
-      this._addCovalentBond(atomicGroup, ca1Pos, cCarb1Pos, 0x334155, 0x334155);
-      this._addCovalentBond(atomicGroup, ca2Pos, cCarb2Pos, 0x334155, 0x334155);
-      this._addCovalentBond(atomicGroup, cCarb1Pos, oCarb1Pos, 0x334155, 0xff2a55);
-      this._addCovalentBond(atomicGroup, cCarb2Pos, oCarb2Pos, 0x334155, 0xff2a55);
+      this._addCovalentBond(atomicGroup, ca1Pos, o1Pos, 0x334155, 0xff2a55);
+      this._addCovalentBond(atomicGroup, ca2Pos, o2Pos, 0x334155, 0xff2a55);
 
       this.atomicGroup.add(atomicGroup);
     }
 
     // =========================================================================
-    // 3. Wooden Log — Fissured Bark & Growth Rings -> Xylem Tracheids & Pits -> Glucan Chains
+    // 3. Wooden Log — Fissured Bark + Xylem Tracheids & Bordered Pits + Glucan
     // =========================================================================
     _buildWoodMeshes() {
-      // STAGE 0 (Macro): Hardwood Log with Procedurally Ridged Outer Bark & Concentric Annual Rings
+      const barkMat = this.matFactory.create({
+        color: 0x3f1d0b,
+        roughness: 0.78,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.35,
+        side: THREE.DoubleSide
+      });
+      const heartwoodMat = this.matFactory.create({
+        color: 0x92400e,
+        roughness: 0.58,
+        sssStrength: 0.25,
+        sssColor: 0xb45309,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.18,
+        side: THREE.DoubleSide
+      });
+      const sapwoodMat = this.matFactory.create({
+        color: 0xd97706,
+        roughness: 0.52,
+        sssStrength: 0.35,
+        sssColor: 0xf59e0b,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.15,
+        side: THREE.DoubleSide
+      });
+
+      // STAGE 0 (Macro): Hardwood Log with Fissured Outer Bark & Concentric Annual Rings
       const macroGroup = new THREE.Group();
       const barkGeom = new THREE.CylinderGeometry(2.25, 2.25, 3.6, 160, 48, true);
       const bPos = barkGeom.attributes.position;
@@ -13715,146 +14226,77 @@ function generateProceduralMolecularStructure(key, S) {
         bPos.setXYZ(i, x * fissure, y, z * fissure);
       }
       barkGeom.computeVertexNormals();
-      const barkMat = new THREE.MeshPhysicalMaterial({ color: 0x3f1d0b, roughness: 0.92, side: THREE.DoubleSide });
       macroGroup.add(new THREE.Mesh(barkGeom, barkMat));
 
-      // Concentric heartwood & sapwood rings on end-grain faces
-      for (let r = 0.22; r <= 2.18; r += 0.22) {
-        const isHeartwood = r < 1.35;
-        const ringMat = new THREE.MeshPhysicalMaterial({
-          color: isHeartwood ? (Math.round(r * 10) % 2 === 0 ? 0x78350f : 0x92400e) : 0xd97706,
-          roughness: 0.68
-        });
-        const ringCyl = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 3.56 - r * 0.01, SEG.cylRadialHi), ringMat);
+      for (let r = 0.22; r <= 2.18; r += 0.24) {
+        const ringCyl = new THREE.Mesh(
+          new THREE.CylinderGeometry(r, r, 3.56 - r * 0.01, SEG.cylRadialHi),
+          r < 1.35 ? heartwoodMat : sapwoodMat
+        );
         macroGroup.add(ringCyl);
       }
       this.macroGroup.add(macroGroup);
 
       // STAGE 1 (Close-up): Porous Earlywood Vessels vs Dense Latewood Fibers
       const closeupGroup = new THREE.Group();
-      const earlyMat = new THREE.MeshPhysicalMaterial({ color: 0xb45309, roughness: 0.6, side: THREE.DoubleSide });
-      const lateMat = new THREE.MeshPhysicalMaterial({ color: 0x78350f, roughness: 0.65, side: THREE.DoubleSide });
       for (let row = -2; row <= 2; row++) {
         const isEarly = row <= 0;
         const radius = isEarly ? 0.36 : 0.18;
-        const wallThick = isEarly ? 0.04 : 0.09;
         for (let col = -3; col <= 3; col++) {
           const pore = new THREE.Mesh(
             new THREE.CylinderGeometry(radius, radius, 4.0, 48, 8, true),
-            isEarly ? earlyMat : lateMat
+            isEarly ? sapwoodMat : heartwoodMat
           );
           pore.position.set(col * (radius * 2.15), 0, row * 0.68);
           closeupGroup.add(pore);
-          const outerWall = new THREE.Mesh(
-            new THREE.CylinderGeometry(radius + wallThick, radius + wallThick, 3.98, 48, 8, true),
-            isEarly ? earlyMat : lateMat
-          );
-          outerWall.position.copy(pore.position);
-          closeupGroup.add(outerWall);
         }
       }
       this.closeupGroup.add(closeupGroup);
 
       // STAGE 2 (Micro): Hexagonal Xylem Tracheids with Torus-Margo Bordered Pits
       const microGroup = new THREE.Group();
-      const tracheidMat = new THREE.MeshPhysicalMaterial({
-        color: 0x92400e,
-        roughness: 0.52,
-        clearcoat: 0.35,
-        transparent: true,
-        opacity: 0.9,
-        side: THREE.DoubleSide
-      });
-      const pitMat = new THREE.MeshPhysicalMaterial({ color: 0xf59e0b, roughness: 0.35, clearcoat: 0.8 });
+      const pitMat = this.matFactory.create({ color: 0xf59e0b, roughness: 0.32, clearcoat: 0.8 });
+      const hexOffsets = [[0, 0], [1.15, 0], [-1.15, 0], [0.58, 1.0], [-0.58, 1.0], [0.58, -1.0], [-0.58, -1.0]];
 
-      const hexOffsets = [
-        [0, 0], [1.15, 0], [-1.15, 0],
-        [0.58, 1.0], [-0.58, 1.0], [0.58, -1.0], [-0.58, -1.0]
-      ];
       hexOffsets.forEach(([hx, hz]) => {
-        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 4.6, 6, 16, true), tracheidMat);
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 4.6, 6, 16, true), heartwoodMat);
         tube.position.set(hx, 0, hz);
         microGroup.add(tube);
 
-        // Bordered pits (dome rings with central torus valve) along tracheid walls
         for (let py = -1.6; py <= 1.6; py += 0.8) {
           const pitDome = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.045, 32, 64), pitMat);
           pitDome.position.set(hx + 0.49, py, hz);
           pitDome.rotation.y = Math.PI / 2;
           microGroup.add(pitDome);
-
-          const torusDisc = new THREE.Mesh(new THREE.SphereGeometry(0.07, 32, 24), pitMat);
-          torusDisc.position.set(hx + 0.49, py, hz);
-          microGroup.add(torusDisc);
         }
       });
       this.microGroup.add(microGroup);
 
-      // STAGE 3 (FE-SEM): Concentric Secondary Cell Wall Lamellae (S1, S2, S3) with Helical Microfibrils
+      // STAGE 3 (FE-SEM): Concentric Secondary Cell Wall Lamellae (S1, S2, S3)
       const semGroup = new THREE.Group();
-      const layerRadii = [0.75, 1.15, 1.55, 1.95];
-      const layerColors = [0xfbbf24, 0xd97706, 0xb45309, 0x78350f];
-      layerRadii.forEach((rad, idx) => {
-        const h = 4.2 - idx * 0.55; // Telescoped cutaway
+      [0.75, 1.15, 1.55, 1.95].forEach((rad, idx) => {
+        const h = 4.2 - idx * 0.55;
         const cyl = new THREE.Mesh(
           new THREE.CylinderGeometry(rad, rad, h, SEG.cylRadialHi, 12, true),
-          new THREE.MeshPhysicalMaterial({
-            color: layerColors[idx],
-            roughness: 0.45,
-            transparent: true,
-            opacity: 0.78,
-            side: THREE.DoubleSide
-          })
+          idx % 2 === 0 ? sapwoodMat : heartwoodMat
         );
         semGroup.add(cyl);
-
-        // Helical cellulose microfibril windings on each lamella
-        for (let w = 0; w < 8; w++) {
-          const wPts = [];
-          const phase = (w / 8) * Math.PI * 2;
-          const pitch = idx === 1 ? 0.8 : 2.2; // S2 has steep microfibril angle
-          for (let y = -h * 0.5; y <= h * 0.5; y += 0.1) {
-            const a = y * pitch + phase;
-            wPts.push(new THREE.Vector3(Math.cos(a) * (rad + 0.02), y, Math.sin(a) * (rad + 0.02)));
-          }
-          const fibril = new THREE.Mesh(
-            new THREE.TubeGeometry(new THREE.CatmullRomCurve3(wPts), 96, 0.03, 16, false),
-            new THREE.MeshPhysicalMaterial({ color: 0xfde68a, roughness: 0.3 })
-          );
-          semGroup.add(fibril);
-        }
       });
       this.semGroup.add(semGroup);
 
-      // STAGE 4 (Nano): Crystalline Cellulose Elementary Fibrils Cross-Linked by Hemicellulose & Lignin
+      // STAGE 4 (Nano): Crystalline Cellulose Elementary Fibrils in Lignin Matrix
       const nanoGroup = new THREE.Group();
-      const cellRodMat = new THREE.MeshPhysicalMaterial({ color: 0xf59e0b, roughness: 0.25, clearcoat: 0.85 });
-      const ligninMat = new THREE.MeshPhysicalMaterial({
-        color: 0x78350f,
-        roughness: 0.4,
-        transparent: true,
-        opacity: 0.65
-      });
-
-      const rodCoords = [[-0.95, -0.55], [0.95, -0.55], [0, 0.85], [-0.95, 0.85], [0.95, 0.85]];
-      rodCoords.forEach(([rx, rz]) => {
-        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 4.6, 6, 24), cellRodMat);
+      [[-0.95, -0.55], [0.95, -0.55], [0, 0.85], [-0.95, 0.85], [0.95, 0.85]].forEach(([rx, rz]) => {
+        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 4.6, 6, 24), pitMat);
         rod.position.set(rx, 0, rz);
         nanoGroup.add(rod);
       });
-      // Hemicellulose tethers & phenolic lignin nodules
-      for (let i = 0; i < 16; i++) {
-        const lig = new THREE.Mesh(new THREE.DodecahedronGeometry(0.22, 2), ligninMat);
-        lig.position.set((Math.random() - 0.5) * 2.2, (Math.random() - 0.5) * 3.6, (Math.random() - 0.5) * 1.8);
-        nanoGroup.add(lig);
-      }
       this.nanoGroup.add(nanoGroup);
 
-      // STAGE 5 (Atomic): Two Parallel β(1→4)-D-Glucopyranose Chair Chains with Inter-Chain H-Bonds
+      // STAGE 5 (Atomic): Two Parallel β(1→4)-D-Glucopyranose Chair Chains
       const atomicGroup = new THREE.Group();
-      const cMat = new THREE.MeshPhysicalMaterial({ color: 0x475569, roughness: 0.22, clearcoat: 0.9 });
-      const oMat = new THREE.MeshPhysicalMaterial({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
-      const hMat = new THREE.MeshPhysicalMaterial({ color: 0xf8fafc, roughness: 0.2, clearcoat: 1.0 });
+      const cMat = this.matFactory.create({ color: 0x475569, roughness: 0.22, clearcoat: 0.9 });
+      const oMat = this.matFactory.create({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
 
       [-1.15, 1.15].forEach((yChain) => {
         [-1.55, 1.55].forEach((xRing) => {
@@ -13862,35 +14304,16 @@ function generateProceduralMolecularStructure(key, S) {
           for (let i = 0; i < 6; i++) {
             const a = (i / 6) * Math.PI * 2;
             const isO = (i === 0);
-            const chairZ = (i % 2 === 0) ? 0.22 : -0.22; // Chair pucker conformation
-            const p = new THREE.Vector3(xRing + Math.cos(a) * 0.78, yChain + Math.sin(a) * 0.68, chairZ);
-            const atom = new THREE.Mesh(
-              new THREE.SphereGeometry(isO ? 0.44 : 0.40, SEG.sphereAtomW, SEG.sphereAtomH),
-              isO ? oMat : cMat
-            );
+            const p = new THREE.Vector3(xRing + Math.cos(a) * 0.78, yChain + Math.sin(a) * 0.68, (i % 2 === 0) ? 0.22 : -0.22);
+            const atom = new THREE.Mesh(new THREE.SphereGeometry(isO ? 0.44 : 0.40, SEG.sphereAtomW, SEG.sphereAtomH), isO ? oMat : cMat);
             atom.position.copy(p);
             atomicGroup.add(atom);
             ringAtoms.push(p);
-
-            // Exocyclic -OH hydroxyl groups
-            if (!isO && i !== 4) {
-              const ohPos = p.clone().add(new THREE.Vector3(Math.cos(a) * 0.52, Math.sin(a) * 0.52, 0));
-              const ohMesh = new THREE.Mesh(new THREE.SphereGeometry(0.32, 48, 36), oMat);
-              ohMesh.position.copy(ohPos);
-              atomicGroup.add(ohMesh);
-              this._addCovalentBond(atomicGroup, p, ohPos, 0x475569, 0xff2a55);
-
-              const hPos = ohPos.clone().add(new THREE.Vector3(0, (yChain > 0 ? -0.32 : 0.32), 0));
-              const hMesh = new THREE.Mesh(new THREE.SphereGeometry(0.20, 36, 24), hMat);
-              hMesh.position.copy(hPos);
-              atomicGroup.add(hMesh);
-            }
           }
           for (let i = 0; i < 6; i++) {
             this._addCovalentBond(atomicGroup, ringAtoms[i], ringAtoms[(i + 1) % 6], 0x475569, 0x475569);
           }
         });
-        // β(1→4) glycosidic oxygen bridge between the two glucose rings
         const bridgePos = new THREE.Vector3(0, yChain, 0);
         const bridgeO = new THREE.Mesh(new THREE.SphereGeometry(0.46, SEG.sphereAtomW, SEG.sphereAtomH), oMat);
         bridgeO.position.copy(bridgePos);
@@ -13898,75 +14321,62 @@ function generateProceduralMolecularStructure(key, S) {
         this._addCovalentBond(atomicGroup, new THREE.Vector3(-0.78, yChain, -0.2), bridgePos, 0x475569, 0xff2a55);
         this._addCovalentBond(atomicGroup, bridgePos, new THREE.Vector3(0.78, yChain, 0.2), 0xff2a55, 0x475569);
       });
-
-      // Inter-chain hydrogen bonds welding the two cellulose ribbons together
       this._addHydrogenBond(atomicGroup, new THREE.Vector3(-1.1, -0.5, 0), new THREE.Vector3(-1.1, 0.5, 0));
       this._addHydrogenBond(atomicGroup, new THREE.Vector3(1.1, -0.5, 0), new THREE.Vector3(1.1, 0.5, 0));
       this.atomicGroup.add(atomicGroup);
     }
 
     // =========================================================================
-    // 4. Camera Sensor — BSI CMOS Package -> Bayer Microlenses -> DTI Photodiodes -> Si Lattice
+    // 4. Camera Sensor — Iridescent BSI Die + Bayer Microlenses + Si Lattice
     // =========================================================================
     _buildCameraSensorMeshes() {
-      // STAGE 0 (Macro): Ceramic LCC Package, Iridescent Sensor Die, Gold Wire-Bond Pads & AR Cover Glass
-      const macroGroup = new THREE.Group();
-      const ceramicMat = new THREE.MeshPhysicalMaterial({ color: 0x1e293b, roughness: 0.35, metalness: 0.2 });
-      const dieMat = new THREE.MeshPhysicalMaterial({
+      const ceramicMat = this.matFactory.create({ color: 0x1e293b, roughness: 0.38, metalness: 0.2 });
+      const dieMat = this.matFactory.create({
         color: 0x059669,
         metalness: 0.88,
         roughness: 0.08,
         iridescence: 1.0,
         iridescenceIOR: 1.6,
-        clearcoat: 1.0
+        clearcoat: 1.0,
+        normalType: 'micrograin',
+        normalScale: 0.05
       });
-      const goldMat = new THREE.MeshPhysicalMaterial({ color: 0xfacc15, metalness: 0.96, roughness: 0.08 });
-      const glassMat = new THREE.MeshPhysicalMaterial({
-        color: 0x38bdf8,
-        transmission: 0.88,
-        transparent: true,
-        opacity: 0.55,
-        roughness: 0.02,
-        clearcoat: 1.0
-      });
+      const goldMat = this.matFactory.create({ color: 0xfacc15, metalness: 0.96, roughness: 0.12, clearcoat: 0.8 });
+      const glassMat = this.matFactory.create({ color: 0x38bdf8, transmission: 0.92, thickness: 0.5, roughness: 0.02, ior: 1.52 });
 
-      macroGroup.add(new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.32, 3.6, 8, 4, 8), ceramicMat));
-      const activeDie = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.12, 2.4, 16, 4, 16), dieMat);
+      // STAGE 0 (Macro): Ceramic LCC Package + Iridescent Sensor Die + AR Glass
+      const macroGroup = new THREE.Group();
+      macroGroup.add(new THREE.Mesh(this._createBeveledBoxGeometry(4.4, 0.32, 3.6, 0.04, 12), ceramicMat));
+      const activeDie = new THREE.Mesh(this._createBeveledBoxGeometry(3.2, 0.12, 2.4, 0.02, 12), dieMat);
       activeDie.position.y = 0.2;
       macroGroup.add(activeDie);
 
-      // Gold perimeter contact pads
       for (let i = -1.6; i <= 1.6; i += 0.32) {
-        const padTop = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.06, 0.22), goldMat);
+        const padTop = new THREE.Mesh(this._createBeveledBoxGeometry(0.16, 0.06, 0.22, 0.01, 6), goldMat);
         padTop.position.set(i, 0.18, 1.55);
         const padBot = padTop.clone();
         padBot.position.set(i, 0.18, -1.55);
         macroGroup.add(padTop, padBot);
       }
-
-      const coverGlass = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.08, 3.0), glassMat);
+      const coverGlass = new THREE.Mesh(this._createBeveledBoxGeometry(3.8, 0.08, 3.0, 0.01, 8), glassMat);
       coverGlass.position.y = 0.42;
       macroGroup.add(coverGlass);
       this.macroGroup.add(macroGroup);
 
-      // STAGE 1 (Close-up): Parabolic Gold Ball Wire Bonds & Peripheral ADC Banks
+      // STAGE 1 (Close-up): Gold Ball Wire Bonds & Peripheral ADC Banks
       const closeupGroup = new THREE.Group();
-      closeupGroup.add(new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.25, 3.8), dieMat));
+      closeupGroup.add(new THREE.Mesh(this._createBeveledBoxGeometry(3.8, 0.25, 3.8, 0.03, 12), dieMat));
       for (let i = -1.5; i <= 1.5; i += 0.38) {
         const bondCurve = new THREE.CatmullRomCurve3([
           new THREE.Vector3(i, 0.15, 1.2),
           new THREE.Vector3(i, 0.75, 1.55),
           new THREE.Vector3(i, 0.12, 1.85)
         ]);
-        const wire = new THREE.Mesh(new THREE.TubeGeometry(bondCurve, 64, 0.035, 24, false), goldMat);
-        closeupGroup.add(wire);
-        const ball = new THREE.Mesh(new THREE.SphereGeometry(0.085, 32, 24), goldMat);
-        ball.position.set(i, 0.15, 1.2);
-        closeupGroup.add(ball);
+        closeupGroup.add(new THREE.Mesh(new THREE.TubeGeometry(bondCurve, 64, 0.035, 24, false), goldMat));
       }
       this.closeupGroup.add(closeupGroup);
 
-      // STAGE 2 (Micro): 4x4 RGGB Bayer Color Filter Mosaic + Hemispherical Convex Microlenses
+      // STAGE 2 (Micro): 4x4 RGGB Bayer Color Filter Mosaic + Hemispherical Microlenses
       const microGroup = new THREE.Group();
       const bayerColors = [
         [0xef4444, 0x22c55e, 0xef4444, 0x22c55e],
@@ -13974,40 +14384,30 @@ function generateProceduralMolecularStructure(key, S) {
         [0xef4444, 0x22c55e, 0xef4444, 0x22c55e],
         [0x22c55e, 0x3b82f6, 0x22c55e, 0x3b82f6]
       ];
-      const siBaseMat = new THREE.MeshPhysicalMaterial({ color: 0x334155, metalness: 0.85, roughness: 0.18 });
-      const lensMat = new THREE.MeshPhysicalMaterial({
-        color: 0xe0f2fe,
-        transmission: 0.9,
-        transparent: true,
-        opacity: 0.85,
-        roughness: 0.02,
-        ior: 1.52,
-        clearcoat: 1.0
-      });
+      const siBaseMat = this.matFactory.create({ color: 0x334155, metalness: 0.85, roughness: 0.18 });
 
       for (let r = 0; r < 4; r++) {
         for (let c = 0; c < 4; c++) {
           const px = (c - 1.5) * 0.96;
           const pz = (r - 1.5) * 0.96;
-          const well = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.45, 0.88), siBaseMat);
+          const well = new THREE.Mesh(this._createBeveledBoxGeometry(0.88, 0.45, 0.88, 0.03, 8), siBaseMat);
           well.position.set(px, -0.25, pz);
           microGroup.add(well);
 
-          const filterMat = new THREE.MeshPhysicalMaterial({
+          const filterMat = this.matFactory.create({
             color: bayerColors[r][c],
-            transmission: 0.72,
-            transparent: true,
-            opacity: 0.88,
-            roughness: 0.08,
+            transmission: 0.82,
+            thickness: 0.4,
+            roughness: 0.06,
             clearcoat: 1.0
           });
-          const filter = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.18, 0.88), filterMat);
+          const filter = new THREE.Mesh(this._createBeveledBoxGeometry(0.88, 0.18, 0.88, 0.02, 8), filterMat);
           filter.position.set(px, 0.08, pz);
           microGroup.add(filter);
 
           const dome = new THREE.Mesh(
             new THREE.SphereGeometry(0.44, 64, 48, 0, Math.PI * 2, 0, Math.PI * 0.5),
-            lensMat
+            glassMat
           );
           dome.scale.set(1, 0.65, 1);
           dome.position.set(px, 0.17, pz);
@@ -14018,62 +14418,45 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 3 (FE-SEM): Deep Trench Isolation (DTI) Walls & Pinned Photodiode Wells
       const semGroup = new THREE.Group();
-      const dtiMat = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transmission: 0.6, transparent: true, opacity: 0.82 });
-      const pdWellMat = new THREE.MeshPhysicalMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.2 });
       for (let x = -1.2; x <= 1.2; x += 0.8) {
-        const trench = new THREE.Mesh(new THREE.BoxGeometry(0.10, 3.2, 2.8), dtiMat);
+        const trench = new THREE.Mesh(this._createBeveledBoxGeometry(0.10, 3.2, 2.8, 0.01, 8), glassMat);
         trench.position.set(x, 0, 0);
         semGroup.add(trench);
       }
       for (let x = -0.8; x <= 0.8; x += 0.8) {
-        const well = new THREE.Mesh(new THREE.BoxGeometry(0.62, 2.6, 2.4), pdWellMat);
+        const well = new THREE.Mesh(this._createBeveledBoxGeometry(0.62, 2.6, 2.4, 0.03, 10), siBaseMat);
         well.position.set(x, -0.2, 0);
         semGroup.add(well);
       }
       this.semGroup.add(semGroup);
 
-      // STAGE 4 (Nano): Silicon p-n Depletion Zone with Electron-Hole Pair Generation
+      // STAGE 4 (Nano): Silicon p-n Depletion Zone with Glowing Electron-Hole Pairs
       const nanoGroup = new THREE.Group();
-      const pZone = new THREE.Mesh(
-        new THREE.BoxGeometry(3.2, 1.2, 2.4),
-        new THREE.MeshPhysicalMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.35 })
-      );
-      pZone.position.y = -0.8;
-      const nZone = new THREE.Mesh(
-        new THREE.BoxGeometry(3.2, 1.2, 2.4),
-        new THREE.MeshPhysicalMaterial({ color: 0xf97316, transparent: true, opacity: 0.35 })
-      );
-      nZone.position.y = 0.8;
-      nanoGroup.add(pZone, nZone);
-
-      const eMat = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.5 });
-      const holeMat = new THREE.MeshPhysicalMaterial({ color: 0xf43f5e, emissive: 0xe11d48, emissiveIntensity: 0.4 });
+      const eMat = this.matFactory.create({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.85, roughness: 0.1 });
+      const holeMat = this.matFactory.create({ color: 0xf43f5e, emissive: 0xe11d48, emissiveIntensity: 0.75, roughness: 0.1 });
       for (let i = 0; i < 18; i++) {
-        const carrier = new THREE.Mesh(new THREE.SphereGeometry(0.16, 48, 36), i % 2 === 0 ? eMat : holeMat);
+        const carrier = new THREE.Mesh(new THREE.SphereGeometry(0.18, 48, 36), i % 2 === 0 ? eMat : holeMat);
         carrier.position.set((Math.random() - 0.5) * 2.6, (Math.random() - 0.5) * 2.2, (Math.random() - 0.5) * 1.8);
         nanoGroup.add(carrier);
       }
       this.nanoGroup.add(nanoGroup);
 
-      // STAGE 5 (Atomic): Complete 18-Atom Diamond-Cubic Silicon Unit Cell + Phosphorus & Boron Dopants
+      // STAGE 5 (Atomic): Complete 18-Atom Diamond-Cubic Silicon Unit Cell + P/B Dopants
       const atomicGroup = new THREE.Group();
       this._populateDiamondSiliconLattice(atomicGroup, true);
       this.atomicGroup.add(atomicGroup);
     }
 
     _populateDiamondSiliconLattice(targetGroup, includeDopants) {
-      const siMat = new THREE.MeshPhysicalMaterial({ color: 0x94a3b8, metalness: 0.88, roughness: 0.14, clearcoat: 1.0 });
-      const pDopantMat = new THREE.MeshPhysicalMaterial({ color: 0xf97316, metalness: 0.7, roughness: 0.12, emissive: 0xea580c, emissiveIntensity: 0.25, clearcoat: 1.0 });
-      const bDopantMat = new THREE.MeshPhysicalMaterial({ color: 0xec4899, metalness: 0.7, roughness: 0.12, clearcoat: 1.0 });
+      const siMat = this.matFactory.create({ color: 0x94a3b8, metalness: 0.88, roughness: 0.14, clearcoat: 1.0 });
+      const pDopantMat = this.matFactory.create({ color: 0xf97316, metalness: 0.65, roughness: 0.12, emissive: 0xea580c, emissiveIntensity: 0.45, clearcoat: 1.0 });
+      const bDopantMat = this.matFactory.create({ color: 0xec4899, metalness: 0.65, roughness: 0.12, clearcoat: 1.0 });
 
       const s = 1.35;
       const basis = [
-        // Corners
         [-1, -1, -1], [1, -1, -1], [-1, 1, -1], [1, 1, -1],
         [-1, -1, 1],  [1, -1, 1],  [-1, 1, 1],  [1, 1, 1],
-        // Face Centers
         [0, 0, -1], [0, 0, 1], [0, -1, 0], [0, 1, 0], [-1, 0, 0], [1, 0, 0],
-        // 4 Tetrahedral Interior Sites
         [-0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [0.5, -0.5, 0.5], [-0.5, 0.5, 0.5]
       ];
       const positions = basis.map(([x, y, z]) => new THREE.Vector3(x * s, y * s, z * s));
@@ -14097,10 +14480,19 @@ function generateProceduralMolecularStructure(key, S) {
     }
 
     // =========================================================================
-    // 5. Paper Sheet — Sheet -> Wire Tooth -> Ribbon Fibers -> CaCO3 Rosettes -> Calcite Lattice
+    // 5. Paper Sheet — Subsurface Scattering Pulp + CaCO3 Rosettes + Calcite
     // =========================================================================
     _buildPaperMeshes() {
-      const paperMat = new THREE.MeshPhysicalMaterial({ color: 0xf8fafc, roughness: 0.72, clearcoat: 0.15, side: THREE.DoubleSide });
+      const paperMat = this.matFactory.create({
+        color: 0xf8fafc,
+        roughness: 0.68,
+        sheen: 0.45,
+        sssStrength: 0.45,
+        sssColor: 0xe2e8f0,
+        normalType: 'micrograin',
+        normalScale: 0.22,
+        side: THREE.DoubleSide
+      });
 
       // STAGE 0 (Macro): Slightly Curved High-Brightness Bond Paper Sheet
       const sheetGeom = new THREE.PlaneGeometry(4.4, 3.4, 96, 96);
@@ -14131,7 +14523,6 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 2 (Micro): Felted Web of Flattened Ribbon-Like Cellulose Pulp Fibers
       const microGroup = new THREE.Group();
-      const ribbonMat = new THREE.MeshPhysicalMaterial({ color: 0xf1f5f9, roughness: 0.65, clearcoat: 0.25 });
       for (let i = 0; i < 24; i++) {
         const angle = (i / 24) * Math.PI + (i % 3) * 0.2;
         const pts = [];
@@ -14142,20 +14533,20 @@ function generateProceduralMolecularStructure(key, S) {
             Math.sin(angle) * t
           ));
         }
-        const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 96, 0.14, 32, false), ribbonMat);
-        tube.scale.set(1, 0.38, 1); // Flattened lumen ribbon profile
+        const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 96, 0.14, 32, false), paperMat);
+        tube.scale.set(1, 0.38, 1);
         microGroup.add(tube);
       }
       this.microGroup.add(microGroup);
 
       // STAGE 3 (FE-SEM): Fibrillated Cellulose Crossing + Scalenohedral CaCO3 Rosette Clusters
       const semGroup = new THREE.Group();
-      semGroup.add(new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.28, 1.4, 16, 4, 16), ribbonMat));
-      const crossFiber = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.28, 3.8, 16, 4, 16), ribbonMat);
+      semGroup.add(new THREE.Mesh(this._createBeveledBoxGeometry(3.8, 0.28, 1.4, 0.04, 12), paperMat));
+      const crossFiber = new THREE.Mesh(this._createBeveledBoxGeometry(1.4, 0.28, 3.8, 0.04, 12), paperMat);
       crossFiber.position.y = 0.22;
       semGroup.add(crossFiber);
 
-      const calciteMat = new THREE.MeshPhysicalMaterial({ color: 0xbae6fd, roughness: 0.15, clearcoat: 0.95 });
+      const calciteMat = this.matFactory.create({ color: 0xbae6fd, roughness: 0.15, transmission: 0.5, clearcoat: 1.0 });
       for (let c = 0; c < 10; c++) {
         const rosette = new THREE.Group();
         rosette.position.set((Math.random() - 0.5) * 2.4, 0.42, (Math.random() - 0.5) * 2.4);
@@ -14172,7 +14563,7 @@ function generateProceduralMolecularStructure(key, S) {
       const nanoGroup = new THREE.Group();
       for (let y of [-0.65, 0.65]) {
         for (let z = -1.2; z <= 1.2; z += 0.6) {
-          const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 4.2, 48), ribbonMat);
+          const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 4.2, 48), paperMat);
           rod.position.set(0, y, z);
           rod.rotation.z = Math.PI / 2;
           nanoGroup.add(rod);
@@ -14183,11 +14574,11 @@ function generateProceduralMolecularStructure(key, S) {
       }
       this.nanoGroup.add(nanoGroup);
 
-      // STAGE 5 (Atomic): Rhombohedral Calcite (CaCO₃) Ionic Crystal Lattice + Cellulose Hydroxyls
+      // STAGE 5 (Atomic): Rhombohedral Calcite (CaCO₃) Ionic Crystal Lattice
       const atomicGroup = new THREE.Group();
-      const caMat = new THREE.MeshPhysicalMaterial({ color: 0x06b6d4, metalness: 0.72, roughness: 0.15, clearcoat: 1.0 });
-      const cMat = new THREE.MeshPhysicalMaterial({ color: 0x334155, roughness: 0.25, clearcoat: 0.85 });
-      const oMat = new THREE.MeshPhysicalMaterial({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
+      const caMat = this.matFactory.create({ color: 0x06b6d4, metalness: 0.72, roughness: 0.15, clearcoat: 1.0 });
+      const cMat = this.matFactory.create({ color: 0x334155, roughness: 0.25, clearcoat: 0.85 });
+      const oMat = this.matFactory.create({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
 
       const caPositions = [
         new THREE.Vector3(-1.4, -0.9, 0),
@@ -14225,22 +14616,28 @@ function generateProceduralMolecularStructure(key, S) {
     }
 
     // =========================================================================
-    // 6. Carbon Fibre — 2x2 Twill Weave -> 3K Tows -> 7μm Filaments -> Turbostratic Graphene
+    // 6. Carbon Fibre — Anisotropic Clearcoated Twill + Turbostratic Graphene
     // =========================================================================
     _buildCarbonFibreMeshes() {
-      const cfMat = new THREE.MeshPhysicalMaterial({
+      const cfMat = this.matFactory.create({
         color: 0x111827,
         metalness: 0.88,
-        roughness: 0.16,
-        anisotropy: 0.8,
+        roughness: 0.18,
+        anisotropy: 0.85,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.04
+        clearcoatRoughness: 0.03,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.18
       });
-      const cfWeftMat = new THREE.MeshPhysicalMaterial({
+      const cfWeftMat = this.matFactory.create({
         color: 0x1e293b,
         metalness: 0.85,
-        roughness: 0.20,
-        clearcoat: 1.0
+        roughness: 0.22,
+        anisotropy: 0.85,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.03,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.18
       });
 
       // STAGE 0 (Macro): True 3D Over-Under 2x2 Twill Weave Carbon Composite Plate
@@ -14261,7 +14658,7 @@ function generateProceduralMolecularStructure(key, S) {
       }
       this.macroGroup.add(macroGroup);
 
-      // STAGE 1 (Close-up): Intersecting Multi-Filament Warp & Weft Tows in Epoxy Matrix
+      // STAGE 1 (Close-up): Intersecting Multi-Filament Warp & Weft Tows
       const closeupGroup = new THREE.Group();
       for (let f = -6; f <= 6; f++) {
         const fil = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 4.4, 32), cfMat);
@@ -14311,10 +14708,10 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 4 (Nano): Undulating Turbostratic Graphene Nanoribbon Stacks
       const nanoGroup = new THREE.Group();
-      const ribbonMat = new THREE.MeshPhysicalMaterial({
+      const ribbonMat = this.matFactory.create({
         color: 0x334155,
         metalness: 0.9,
-        roughness: 0.12,
+        roughness: 0.14,
         clearcoat: 1.0,
         side: THREE.DoubleSide
       });
@@ -14334,7 +14731,14 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 5 (Atomic): Two-Layer AB-Stacked Hexagonal Graphene Honeycomb + Delocalized π-Clouds
       const atomicGroup = new THREE.Group();
-      const cAtomMat = new THREE.MeshPhysicalMaterial({ color: 0x1e293b, metalness: 0.92, roughness: 0.12, clearcoat: 1.0 });
+      const cAtomMat = this.matFactory.create({
+        color: 0x1e293b,
+        metalness: 0.92,
+        roughness: 0.12,
+        clearcoat: 1.0,
+        normalType: 'micrograin',
+        normalScale: 0.08
+      });
       const hexBond = 0.72;
 
       [-0.85, 0.85].forEach((zLayer, layerIdx) => {
@@ -14370,7 +14774,7 @@ function generateProceduralMolecularStructure(key, S) {
     // 7. Kerosene — Iridescent Fuel Film -> Bénard Cells -> Alkane Swarm -> Full 38-Atom Dodecane
     // =========================================================================
     _buildKeroseneMeshes() {
-      const fuelMat = new THREE.MeshPhysicalMaterial({
+      const fuelMat = this.matFactory.create({
         color: 0xfacc15,
         transmission: 0.88,
         transparent: true,
@@ -14379,7 +14783,8 @@ function generateProceduralMolecularStructure(key, S) {
         ior: 1.44,
         iridescence: 0.9,
         iridescenceIOR: 1.45,
-        clearcoat: 1.0
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02
       });
 
       // STAGE 0 (Macro): Spreading Hydrocarbon Fuel Puddle with Iridescent Sheen
@@ -14406,21 +14811,29 @@ function generateProceduralMolecularStructure(key, S) {
       });
       this.microGroup.add(microGroup);
 
-      // STAGE 3 (FE-SEM): Cryo-SEM Quenched Paraffinic Lamellar Domains
+      // STAGE 3 (FE-SEM): Cryo-Quenched Paraffinic Lamellar Crystal Domains
       const semGroup = new THREE.Group();
-      const waxMat = new THREE.MeshPhysicalMaterial({ color: 0xfef08a, roughness: 0.22, clearcoat: 0.85 });
-      for (let i = 0; i < 12; i++) {
-        const plate = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.14, 0.65, 8, 2, 8), waxMat);
-        plate.position.set((Math.random() - 0.5) * 2.4, (i - 5.5) * 0.24, (Math.random() - 0.5) * 2.2);
-        plate.rotation.set(0.2 * Math.sin(i), i * 0.5, 0.15 * Math.cos(i));
-        semGroup.add(plate);
+      const waxMat = this.matFactory.create({
+        color: 0xfef08a,
+        transmission: 0.4,
+        transparent: true,
+        opacity: 0.85,
+        roughness: 0.18,
+        clearcoat: 0.8
+      });
+      for (let x = -1.2; x <= 1.2; x += 0.6) {
+        for (let z = -1.2; z <= 1.2; z += 0.6) {
+          const lamella = new THREE.Mesh(this._createBeveledBoxGeometry(0.5, 0.7, 0.5, 0.03, 8), waxMat);
+          lamella.position.set(x, (Math.random() - 0.5) * 0.3, z);
+          semGroup.add(lamella);
+        }
       }
       this.semGroup.add(semGroup);
 
-      // STAGE 4 (Nano): Entangled Swarm of Aliphatic C10–C16 Hydrocarbon Chains
+      // STAGE 4 (Nano): Dynamic Worm-like Swarm of C10-C16 Alkane Chains
       const nanoGroup = new THREE.Group();
-      const chainColors = [0xfbbf24, 0xf59e0b, 0x38bdf8, 0xfde047];
-      for (let k = 0; k < 14; k++) {
+      const chainColors = [0x38bdf8, 0x60a5fa, 0x93c5fd, 0x3b82f6];
+      for (let k = 0; k < 18; k++) {
         const pts = [];
         const zOff = ((k % 4) - 1.5) * 0.75;
         const yOff = (Math.floor(k / 4) - 1.2) * 0.75;
@@ -14431,9 +14844,14 @@ function generateProceduralMolecularStructure(key, S) {
             zOff + Math.cos(k * 1.3 + s) * 0.12
           ));
         }
+        const tubeMat = this.matFactory.create({
+          color: chainColors[k % chainColors.length],
+          roughness: 0.2,
+          clearcoat: 0.9
+        });
         const tube = new THREE.Mesh(
           new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 128, 0.085, 24, false),
-          new THREE.MeshPhysicalMaterial({ color: chainColors[k % chainColors.length], roughness: 0.2, clearcoat: 0.9 })
+          tubeMat
         );
         nanoGroup.add(tube);
       }
@@ -14441,8 +14859,8 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 5 (Atomic): Complete 38-Atom All-Trans n-Dodecane (C₁₂H₂₆) Molecule
       const atomicGroup = new THREE.Group();
-      const cMat = new THREE.MeshPhysicalMaterial({ color: 0x334155, roughness: 0.2, clearcoat: 0.95 });
-      const hMat = new THREE.MeshPhysicalMaterial({ color: 0xf8fafc, roughness: 0.18, clearcoat: 1.0 });
+      const cMat = this.matFactory.create({ color: 0x334155, roughness: 0.2, clearcoat: 0.95 });
+      const hMat = this.matFactory.create({ color: 0xf8fafc, roughness: 0.18, clearcoat: 1.0 });
 
       const carbonPositions = [];
       const numCarbons = 12;
@@ -14489,18 +14907,18 @@ function generateProceduralMolecularStructure(key, S) {
     _buildCpuMeshes() {
       // STAGE 0 (Macro): LGA Substrate, Stepped Nickel-Copper IHS, SMD Capacitors & Gold LGA Pads
       const macroGroup = new THREE.Group();
-      const pcbMat = new THREE.MeshPhysicalMaterial({ color: 0x065f46, roughness: 0.32, clearcoat: 0.65 });
-      const ihsMat = new THREE.MeshPhysicalMaterial({ color: 0xe2e8f0, metalness: 0.94, roughness: 0.10, clearcoat: 1.0 });
-      const goldMat = new THREE.MeshPhysicalMaterial({ color: 0xfacc15, metalness: 0.96, roughness: 0.08 });
+      const pcbMat = this.matFactory.create({ color: 0x065f46, roughness: 0.32, clearcoat: 0.65, normalType: 'anisotropic_fiber', normalScale: 0.08 });
+      const ihsMat = this.matFactory.create({ color: 0xe2e8f0, metalness: 0.94, roughness: 0.10, clearcoat: 1.0, normalType: 'micrograin', normalScale: 0.06 });
+      const goldMat = this.matFactory.create({ color: 0xfacc15, metalness: 0.96, roughness: 0.08, clearcoat: 1.0 });
 
-      macroGroup.add(new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.22, 4.4, 12, 4, 12), pcbMat));
-      const ihsBase = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.22, 3.4, 12, 4, 12), ihsMat);
+      macroGroup.add(new THREE.Mesh(this._createBeveledBoxGeometry(4.4, 0.22, 4.4, 0.04, 12), pcbMat));
+      const ihsBase = new THREE.Mesh(this._createBeveledBoxGeometry(3.4, 0.22, 3.4, 0.03, 12), ihsMat);
       ihsBase.position.y = 0.20;
-      const ihsTop = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.20, 2.8, 12, 4, 12), ihsMat);
+      const ihsTop = new THREE.Mesh(this._createBeveledBoxGeometry(2.8, 0.20, 2.8, 0.03, 12), ihsMat);
       ihsTop.position.y = 0.38;
       macroGroup.add(ihsBase, ihsTop);
 
-      // Gold LGA contact array on underside + SMD capacitors on top substrate border
+      // Gold LGA contact array on underside
       for (let x = -1.8; x <= 1.8; x += 0.45) {
         for (let z = -1.8; z <= 1.8; z += 0.45) {
           const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.03, 24), goldMat);
@@ -14512,41 +14930,38 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 1 (Close-up): Delidded Monolithic Silicon Die Showing Compute Cores & L3 Cache Banks
       const closeupGroup = new THREE.Group();
-      const dieSubMat = new THREE.MeshPhysicalMaterial({ color: 0x0f172a, metalness: 0.9, roughness: 0.12, clearcoat: 1.0 });
-      const coreMat = new THREE.MeshPhysicalMaterial({ color: 0x0284c7, metalness: 0.85, roughness: 0.12, iridescence: 0.9, clearcoat: 1.0 });
-      const cacheMat = new THREE.MeshPhysicalMaterial({ color: 0x7c3aed, metalness: 0.85, roughness: 0.14, clearcoat: 1.0 });
+      const dieSubMat = this.matFactory.create({ color: 0x0f172a, metalness: 0.9, roughness: 0.12, clearcoat: 1.0 });
+      const coreMat = this.matFactory.create({ color: 0x0284c7, metalness: 0.85, roughness: 0.12, iridescence: 0.9, clearcoat: 1.0 });
+      const cacheMat = this.matFactory.create({ color: 0x7c3aed, metalness: 0.85, roughness: 0.14, clearcoat: 1.0 });
 
-      closeupGroup.add(new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.22, 2.8), dieSubMat));
+      closeupGroup.add(new THREE.Mesh(this._createBeveledBoxGeometry(3.8, 0.22, 2.8, 0.03, 10), dieSubMat));
       for (let row of [-0.75, 0.75]) {
         for (let col = -1.35; col <= 1.35; col += 0.9) {
-          const core = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.08, 0.72), coreMat);
+          const core = new THREE.Mesh(this._createBeveledBoxGeometry(0.76, 0.08, 0.72, 0.02, 6), coreMat);
           core.position.set(col, 0.14, row);
           closeupGroup.add(core);
         }
       }
       // Central shared L3 SRAM cache strip
-      // Central shared L3 SRAM cache strip
-      const l3 = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.08, 0.52), cacheMat);
+      const l3 = new THREE.Mesh(this._createBeveledBoxGeometry(3.4, 0.08, 0.52, 0.02, 8), cacheMat);
       l3.position.set(0, 0.14, 0);
       closeupGroup.add(l3);
 
-      // Memory PHY / PCIe SerDes controller I/O strips on perimeter
-      const phyMat = new THREE.MeshPhysicalMaterial({ color: 0x059669, metalness: 0.8, roughness: 0.15 });
+      const phyMat = this.matFactory.create({ color: 0x059669, metalness: 0.8, roughness: 0.15 });
       [-1.75, 1.75].forEach(x => {
-        const phy = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.07, 2.6), phyMat);
+        const phy = new THREE.Mesh(this._createBeveledBoxGeometry(0.24, 0.07, 2.6, 0.015, 6), phyMat);
         phy.position.set(x, 0.13, 0);
         closeupGroup.add(phy);
       });
       this.closeupGroup.add(closeupGroup);
 
-      // STAGE 2 (Micro): Standard Logic Cell Rows (NAND/NOR/Flip-Flops) & Orthogonal Power Delivery Grid
+      // STAGE 2 (Micro): Standard Logic Cell Rows & Orthogonal Power Delivery Grid
       const microGroup = new THREE.Group();
-      const subMat = new THREE.MeshPhysicalMaterial({ color: 0x0284c7, metalness: 0.88, roughness: 0.12, clearcoat: 0.8 });
-      microGroup.add(new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.18, 4.2), subMat));
+      const subMat = this.matFactory.create({ color: 0x0284c7, metalness: 0.88, roughness: 0.12, clearcoat: 0.8 });
+      microGroup.add(new THREE.Mesh(this._createBeveledBoxGeometry(4.2, 0.18, 4.2, 0.02, 8), subMat));
 
-      // Standard cell logic gate rows (Poly-silicon channels & diffusion active areas)
-      const gateMat1 = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, metalness: 0.75, roughness: 0.18 });
-      const gateMat2 = new THREE.MeshPhysicalMaterial({ color: 0xa855f7, metalness: 0.75, roughness: 0.18 });
+      const gateMat1 = this.matFactory.create({ color: 0x38bdf8, metalness: 0.75, roughness: 0.18 });
+      const gateMat2 = this.matFactory.create({ color: 0xa855f7, metalness: 0.75, roughness: 0.18 });
       for (let z = -1.6; z <= 1.6; z += 0.40) {
         for (let x = -1.8; x <= 1.8; x += 0.28) {
           const isPmos = (Math.sin(x * 5 + z * 3) > 0);
@@ -14556,8 +14971,7 @@ function generateProceduralMolecularStructure(key, S) {
         }
       }
 
-      // Orthogonal M1 & M2 Copper / Cobalt power grid rails
-      const cuRailMat = new THREE.MeshPhysicalMaterial({ color: 0xd97706, metalness: 0.95, roughness: 0.08 });
+      const cuRailMat = this.matFactory.create({ color: 0xd97706, metalness: 0.95, roughness: 0.08 });
       for (let z = -1.6; z <= 1.6; z += 0.80) {
         const hRail = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.05, 0.09), cuRailMat);
         hRail.position.set(0, 0.18, z);
@@ -14572,14 +14986,12 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 3 (FE-SEM): FIB-SEM 15-Layer Dual-Damascene Copper/Cobalt Interconnect Stack
       const semGroup = new THREE.Group();
-      const cuWireMat = new THREE.MeshPhysicalMaterial({ color: 0xb45309, metalness: 0.96, roughness: 0.06, clearcoat: 0.9 });
-      const lowKMat = new THREE.MeshPhysicalMaterial({ color: 0x1e293b, transmission: 0.55, transparent: true, opacity: 0.65, roughness: 0.2 });
-      const viaMat = new THREE.MeshPhysicalMaterial({ color: 0x94a3b8, metalness: 0.92, roughness: 0.12 });
+      const cuWireMat = this.matFactory.create({ color: 0xb45309, metalness: 0.96, roughness: 0.06, clearcoat: 0.9 });
+      const lowKMat = this.matFactory.create({ color: 0x1e293b, transmission: 0.55, transparent: true, opacity: 0.65, roughness: 0.2 });
+      const viaMat = this.matFactory.create({ color: 0x94a3b8, metalness: 0.92, roughness: 0.12 });
 
-      // Low-k dielectric inter-metal dielectric block
-      semGroup.add(new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.6, 2.8), lowKMat));
+      semGroup.add(new THREE.Mesh(this._createBeveledBoxGeometry(3.6, 2.6, 2.8, 0.03, 8), lowKMat));
 
-      // Hierarchical interconnect metal levels (M1 to M5 shown with scaling pitch)
       const layers = [
         { y: -1.0, pitch: 0.38, w: 0.16, h: 0.12, dir: 'x' },
         { y: -0.5, pitch: 0.48, w: 0.20, h: 0.14, dir: 'z' },
@@ -14604,7 +15016,6 @@ function generateProceduralMolecularStructure(key, S) {
         }
       });
 
-      // Vertical Tungsten / Cobalt contact vias connecting layers
       for (let x = -1.1; x <= 1.1; x += 0.55) {
         for (let z = -0.9; z <= 0.9; z += 0.6) {
           [-0.75, -0.25, 0.28, 0.82].forEach(vy => {
@@ -14618,26 +15029,22 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 4 (Nano): 3nm Gate-All-Around (GAA) Nanosheet / 3D FinFET Architecture
       const nanoGroup = new THREE.Group();
-      const siFinMat = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, metalness: 0.85, roughness: 0.12, clearcoat: 0.9 });
-      const hfo2Mat = new THREE.MeshPhysicalMaterial({ color: 0xa855f7, transparent: true, opacity: 0.72, roughness: 0.15, transmission: 0.35 });
-      const tinGateMat = new THREE.MeshPhysicalMaterial({ color: 0xef4444, metalness: 0.85, roughness: 0.15, clearcoat: 0.8 });
-      const sigeMat = new THREE.MeshPhysicalMaterial({ color: 0x059669, metalness: 0.78, roughness: 0.2 });
+      const siFinMat = this.matFactory.create({ color: 0x38bdf8, metalness: 0.85, roughness: 0.12, clearcoat: 0.9 });
+      const hfo2Mat = this.matFactory.create({ color: 0xa855f7, transparent: true, opacity: 0.72, roughness: 0.15, transmission: 0.35 });
+      const tinGateMat = this.matFactory.create({ color: 0xef4444, metalness: 0.85, roughness: 0.15, clearcoat: 0.8 });
+      const sigeMat = this.matFactory.create({ color: 0x059669, metalness: 0.78, roughness: 0.2 });
 
-      // 3 parallel horizontal GAA Nanosheet channels or 3D FinFET fins
       [-1.2, 0.0, 1.2].forEach(fx => {
-        // Vertical stacked epitaxial Silicon nanosheets (3 sheets stacked vertically)
         [-0.45, 0.0, 0.45].forEach(sy => {
           const sheet = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.14, 3.2), siFinMat);
           sheet.position.set(fx, sy, 0);
           nanoGroup.add(sheet);
 
-          // Hafnium Oxide (HfO2) high-k dielectric wrapping sleeve
           const sleeve = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.22, 1.2), hfo2Mat);
           sleeve.position.set(fx, sy, 0);
           nanoGroup.add(sleeve);
         });
 
-        // Source and Drain Epitaxial SiGe Stressor blocks at channel ends
         [-1.35, 1.35].forEach(sz => {
           const sige = new THREE.Mesh(new THREE.BoxGeometry(0.68, 1.3, 0.65), sigeMat);
           sige.position.set(fx, 0, sz);
@@ -14645,7 +15052,6 @@ function generateProceduralMolecularStructure(key, S) {
         });
       });
 
-      // Transverse TiN metal gate wrapping all nanosheet stacks
       const crossGate = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.45, 0.85), tinGateMat);
       crossGate.position.set(0, 0, 0);
       nanoGroup.add(crossGate);
@@ -14653,12 +15059,11 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 5 (Atomic): Atomically Resolved Si(100) Channel Interface with High-k HfO2 & Cu Gate
       const atomicGroup = new THREE.Group();
-      const siAtomMat = new THREE.MeshPhysicalMaterial({ color: 0x94a3b8, metalness: 0.82, roughness: 0.15, clearcoat: 1.0 });
-      const hfAtomMat = new THREE.MeshPhysicalMaterial({ color: 0xa855f7, metalness: 0.75, roughness: 0.12, clearcoat: 1.0 });
-      const oAtomMat  = new THREE.MeshPhysicalMaterial({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
-      const cuAtomMat = new THREE.MeshPhysicalMaterial({ color: 0xd97706, metalness: 0.96, roughness: 0.06, clearcoat: 1.0 });
+      const siAtomMat = this.matFactory.create({ color: 0x94a3b8, metalness: 0.82, roughness: 0.15, clearcoat: 1.0 });
+      const hfAtomMat = this.matFactory.create({ color: 0xa855f7, metalness: 0.75, roughness: 0.12, clearcoat: 1.0 });
+      const oAtomMat  = this.matFactory.create({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
+      const cuAtomMat = this.matFactory.create({ color: 0xd97706, metalness: 0.96, roughness: 0.06, clearcoat: 1.0 });
 
-      // Lower Zone: Silicon (100) Diamond-Cubic Crystal Lattice (3x3x2)
       const siPositions = [];
       for (let x = -1.4; x <= 1.4; x += 0.95) {
         for (let z = -1.4; z <= 1.4; z += 0.95) {
@@ -14679,7 +15084,6 @@ function generateProceduralMolecularStructure(key, S) {
         }
       }
 
-      // Middle Zone: Ionic High-k Hafnium Oxide (HfO2) Dielectric Monolayers (Hf4+ & O2-)
       const hfPositions = [];
       const oPositions = [];
       for (let x = -1.2; x <= 1.2; x += 0.8) {
@@ -14690,7 +15094,6 @@ function generateProceduralMolecularStructure(key, S) {
           hfMesh.position.copy(hfP);
           atomicGroup.add(hfMesh);
 
-          // Coordinated Oxygen ions
           [-0.32, 0.32].forEach(oz => {
             const oP = new THREE.Vector3(x + oz, 0.72, z + oz);
             oPositions.push(oP);
@@ -14702,7 +15105,6 @@ function generateProceduralMolecularStructure(key, S) {
         }
       }
 
-      // Upper Zone: Metallic Copper Gate Electrode (FCC Cu Atoms with Conduction Electron Cloud)
       const cuPositions = [];
       for (let x = -1.3; x <= 1.3; x += 0.65) {
         for (let z = -1.3; z <= 1.3; z += 0.65) {
@@ -14737,7 +15139,6 @@ function generateProceduralMolecularStructure(key, S) {
       for (let i = 0; i < bPos.count; i++) {
         const x = bPos.getX(i);
         const y = bPos.getY(i);
-        // V-Keeled curvature along center midrib + natural leaf taper toward apex
         const taper = Math.max(0.15, 1.0 - (y / 2.7) * 0.7);
         const keelZ = Math.abs(x) * 0.28 - 0.12;
         bPos.setX(i, x * taper);
@@ -14745,24 +15146,24 @@ function generateProceduralMolecularStructure(key, S) {
       }
       bladeGeom.computeVertexNormals();
 
-      const grassMat = new THREE.MeshPhysicalMaterial({
+      const grassMat = this.matFactory.create({
         color: 0x16a34a,
         roughness: 0.32,
         clearcoat: 0.85,
         clearcoatRoughness: 0.15,
         sheen: 0.6,
-        sheenColor: 0x86efac
+        sheenColor: 0x86efac,
+        normalType: 'anisotropic_fiber',
+        normalScale: 0.14
       });
       macroGroup.add(new THREE.Mesh(bladeGeom, grassMat));
 
-      // Prominent raised central midrib vascular column
-      const midribMat = new THREE.MeshPhysicalMaterial({ color: 0x4ade80, roughness: 0.28, clearcoat: 0.9 });
+      const midribMat = this.matFactory.create({ color: 0x4ade80, roughness: 0.28, clearcoat: 0.9 });
       const midrib = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.05, 5.2, 24), midribMat);
       midrib.position.set(0, 0, 0.14);
       macroGroup.add(midrib);
 
-      // Microscopic silica prickle hairs along margins
-      const prickleMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 0.8, roughness: 0.1 });
+      const prickleMat = this.matFactory.create({ color: 0xffffff, transmission: 0.8, roughness: 0.1 });
       for (let y = -2.4; y <= 2.4; y += 0.35) {
         [-0.78, 0.78].forEach(x => {
           const prickle = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.14, 12), prickleMat);
@@ -14778,16 +15179,13 @@ function generateProceduralMolecularStructure(key, S) {
       const bladeSlice = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.8, 0.45, 16, 16, 8), grassMat);
       closeupGroup.add(bladeSlice);
 
-      // Longitudinal vascular bundles running in parallel
-      const xylemMat = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transmission: 0.6, roughness: 0.15, clearcoat: 0.9 });
-      const phloemMat = new THREE.MeshPhysicalMaterial({ color: 0xfacc15, roughness: 0.25, clearcoat: 0.8 });
+      const xylemMat = this.matFactory.create({ color: 0x38bdf8, transmission: 0.6, roughness: 0.15, clearcoat: 0.9 });
+      const phloemMat = this.matFactory.create({ color: 0xfacc15, roughness: 0.25, clearcoat: 0.8 });
       for (let x = -1.35; x <= 1.35; x += 0.45) {
-        // Water-conducting Xylem vessel tube with helical wall rings
         const xylemTube = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 2.9, 24), xylemMat);
         xylemTube.position.set(x, 0, 0.06);
         closeupGroup.add(xylemTube);
 
-        // Sugar-conducting Phloem sieve tube bundle
         const phloemTube = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.9, 24), phloemMat);
         phloemTube.position.set(x, 0, -0.08);
         closeupGroup.add(phloemTube);
@@ -14796,20 +15194,25 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 2 (Micro): Epidermal Cells, Stomatal Complexes & Translucent Cytoplasm with Organelles
       const microGroup = new THREE.Group();
-      const epiCellMat = new THREE.MeshPhysicalMaterial({ color: 0x22c55e, roughness: 0.35, transmission: 0.35, transparent: true, opacity: 0.85 });
-      const guardCellMat = new THREE.MeshPhysicalMaterial({ color: 0x15803d, roughness: 0.25, clearcoat: 0.9 });
+      const epiCellMat = this.matFactory.create({
+        color: 0x22c55e,
+        roughness: 0.35,
+        transmission: 0.35,
+        transparent: true,
+        opacity: 0.85,
+        normalType: 'organic_cell',
+        normalScale: 0.16
+      });
+      const guardCellMat = this.matFactory.create({ color: 0x15803d, roughness: 0.25, clearcoat: 0.9 });
       const poreMat = new THREE.MeshBasicMaterial({ color: 0x064e3b });
 
-      // Epidermal pavement cell grid
       for (let y = -1.6; y <= 1.6; y += 0.8) {
         for (let x = -1.6; x <= 1.6; x += 0.8) {
           const cell = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.25, 6), epiCellMat);
           cell.position.set(x, y, 0);
           microGroup.add(cell);
 
-          // Stomatal complexes on selected epidermal junctions
           if ((Math.abs(x) + Math.abs(y)) % 1.6 < 0.1) {
-            // Pair of twin crescent guard cells forming a stoma
             [-0.11, 0.11].forEach(gx => {
               const guard = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.065, 24, 32, Math.PI), guardCellMat);
               guard.position.set(x + gx, y, 0.15);
@@ -14826,15 +15229,16 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 3 (FE-SEM): Cutaway Chloroplast Organelle Showing Grana Stacks & Stroma Lamellae
       const semGroup = new THREE.Group();
-      const chloroEnvMat = new THREE.MeshPhysicalMaterial({
+      const chloroEnvMat = this.matFactory.create({
         color: 0x15803d,
         transmission: 0.45,
         transparent: true,
         opacity: 0.80,
         roughness: 0.2,
-        clearcoat: 1.0
+        clearcoat: 1.0,
+        normalType: 'organic_cell',
+        normalScale: 0.12
       });
-      // Outer double-membrane envelope (ovoid chloroplast)
       const envelope = new THREE.Mesh(
         new THREE.SphereGeometry(2.3, SEG.sphereHiW, SEG.sphereHiH, 0, Math.PI * 1.6, 0, Math.PI),
         chloroEnvMat
@@ -14842,9 +15246,8 @@ function generateProceduralMolecularStructure(key, S) {
       envelope.scale.set(1.4, 0.95, 0.95);
       semGroup.add(envelope);
 
-      // Multiple Grana membrane stacks (coin-shaped thylakoid discs)
-      const granaMat = new THREE.MeshPhysicalMaterial({ color: 0x166534, roughness: 0.25, clearcoat: 0.95 });
-      const lamellaMat = new THREE.MeshPhysicalMaterial({ color: 0x4ade80, transmission: 0.6, transparent: true, opacity: 0.7 });
+      const granaMat = this.matFactory.create({ color: 0x166534, roughness: 0.25, clearcoat: 0.95 });
+      const lamellaMat = this.matFactory.create({ color: 0x4ade80, transmission: 0.6, transparent: true, opacity: 0.7 });
       for (let gx = -1.4; gx <= 1.4; gx += 0.95) {
         for (let gz = -0.7; gz <= 0.7; gz += 0.7) {
           const numDiscs = 6 + Math.floor(Math.random() * 4);
@@ -14853,7 +15256,6 @@ function generateProceduralMolecularStructure(key, S) {
             disc.position.set(gx, (d - numDiscs / 2) * 0.10, gz);
             semGroup.add(disc);
           }
-          // Connecting stroma lamella bridging adjacent grana
           const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.03, 0.22), lamellaMat);
           bridge.position.set(gx + 0.45, 0, gz);
           semGroup.add(bridge);
@@ -14863,15 +15265,13 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 4 (Nano): Thylakoid Membrane Lipid Bilayer with Photosystem II & ATP Synthase
       const nanoGroup = new THREE.Group();
-      const bilayerMat = new THREE.MeshPhysicalMaterial({ color: 0x14532d, roughness: 0.3, transmission: 0.4, transparent: true, opacity: 0.85 });
-      const psiiMat = new THREE.MeshPhysicalMaterial({ color: 0x22c55e, roughness: 0.18, clearcoat: 1.0 });
-      const atpMat  = new THREE.MeshPhysicalMaterial({ color: 0xf59e0b, metalness: 0.4, roughness: 0.2, clearcoat: 0.9 });
+      const bilayerMat = this.matFactory.create({ color: 0x14532d, roughness: 0.3, transmission: 0.4, transparent: true, opacity: 0.85 });
+      const psiiMat = this.matFactory.create({ color: 0x22c55e, roughness: 0.18, clearcoat: 1.0 });
+      const atpMat  = this.matFactory.create({ color: 0xf59e0b, metalness: 0.4, roughness: 0.2, clearcoat: 0.9 });
 
-      // Flat section of thylakoid lipid bilayer disc
       const membraneBed = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 0.32, SEG.cylRadialHi), bilayerMat);
       nanoGroup.add(membraneBed);
 
-      // Embedded Photosystem II (PSII) supercomplexes (dimeric core antenna)
       for (let i = 0; i < 16; i++) {
         const a = (i / 16) * Math.PI * 2;
         const r = 0.7 + (i % 3) * 0.55;
@@ -14880,7 +15280,6 @@ function generateProceduralMolecularStructure(key, S) {
         nanoGroup.add(psii);
       }
 
-      // Rotary mushroom-shaped ATP Synthase nanomotor (CF0-CF1 complex)
       const atpStalk = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.75, 16), atpMat);
       atpStalk.position.set(0, 0.45, 0);
       const atpHead = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 24), atpMat);
@@ -14890,18 +15289,16 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 5 (Atomic): Chlorophyll a Porphyrin Macrocycle with Coordinated Mg²⁺ & Phytol Tail
       const atomicGroup = new THREE.Group();
-      const mgAtomMat = new THREE.MeshPhysicalMaterial({ color: 0x10b981, metalness: 0.88, roughness: 0.12, clearcoat: 1.0 });
-      const nAtomMat  = new THREE.MeshPhysicalMaterial({ color: 0x3b82f6, roughness: 0.18, clearcoat: 1.0 });
-      const cAtomMat  = new THREE.MeshPhysicalMaterial({ color: 0x334155, roughness: 0.22, clearcoat: 0.9 });
-      const oAtomMat  = new THREE.MeshPhysicalMaterial({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
+      const mgAtomMat = this.matFactory.create({ color: 0x10b981, metalness: 0.88, roughness: 0.12, clearcoat: 1.0 });
+      const nAtomMat  = this.matFactory.create({ color: 0x3b82f6, roughness: 0.18, clearcoat: 1.0 });
+      const cAtomMat  = this.matFactory.create({ color: 0x334155, roughness: 0.22, clearcoat: 0.9 });
+      const oAtomMat  = this.matFactory.create({ color: 0xff2a55, roughness: 0.18, clearcoat: 1.0 });
 
-      // Central Mg²⁺ Magnesium ion
       const mgPos = new THREE.Vector3(0, 0.6, 0);
       const mgMesh = new THREE.Mesh(new THREE.SphereGeometry(0.68, SEG.sphereHiW, SEG.sphereHiH), mgAtomMat);
       mgMesh.position.copy(mgPos);
       atomicGroup.add(mgMesh);
 
-      // 4 Pyrrole Ring Nitrogen atoms coordinating the central Mg²⁺ ion (Square Planar)
       const nCoords = [
         new THREE.Vector3( 1.15, 0.6,  0),
         new THREE.Vector3(-1.15, 0.6,  0),
@@ -14912,11 +15309,9 @@ function generateProceduralMolecularStructure(key, S) {
         const nMesh = new THREE.Mesh(new THREE.SphereGeometry(0.44, SEG.sphereAtomW, SEG.sphereAtomH), nAtomMat);
         nMesh.position.copy(np);
         atomicGroup.add(nMesh);
-        // Mg-N coordination bond
         this._addCovalentBond(atomicGroup, mgPos, np, 0x10b981, 0x3b82f6);
       });
 
-      // Porphyrin Chlorin Macrocycle Ring (20 Carbon atoms forming conjugated resonant ring)
       const ringCarbons = [];
       for (let i = 0; i < 16; i++) {
         const angle = (i / 16) * Math.PI * 2;
@@ -14933,14 +15328,12 @@ function generateProceduralMolecularStructure(key, S) {
         this._addCovalentBond(atomicGroup, ringCarbons[i], ringCarbons[nextIdx], 0x334155, 0x334155);
       }
 
-      // Carbonyl / Ester functional groups on the chlorin ring
       const o1Pos = new THREE.Vector3(2.6, 0.6, 1.2);
       const o1Mesh = new THREE.Mesh(new THREE.SphereGeometry(0.32, SEG.sphereAtomW, SEG.sphereAtomH), oAtomMat);
       o1Mesh.position.copy(o1Pos);
       atomicGroup.add(o1Mesh);
       this._addCovalentBond(atomicGroup, ringCarbons[3], o1Pos, 0x334155, 0xff2a55);
 
-      // C20 Hydrophobic Phytol Hydrocarbon Tail zigzagging downward into membrane
       let prevTailPos = ringCarbons[11].clone();
       for (let t = 1; t <= 10; t++) {
         const tx = prevTailPos.x + (t % 2 === 0 ? 0.28 : -0.28);
@@ -14964,44 +15357,38 @@ function generateProceduralMolecularStructure(key, S) {
     _buildMirrorMeshes() {
       // STAGE 0 (Macro): Precision Bevelled Optical Silvered Glass Mirror in Slate Frame
       const macroGroup = new THREE.Group();
-      const mirrorGlassMat = new THREE.MeshPhysicalMaterial({
+      const mirrorGlassMat = this.matFactory.create({
         color: 0xffffff,
         metalness: 0.99,
         roughness: 0.015,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.01,
-        reflectivity: 1.0
+        clearcoatRoughness: 0.01
       });
-      const frameMat = new THREE.MeshPhysicalMaterial({ color: 0x0f172a, roughness: 0.35, clearcoat: 0.5 });
+      const frameMat = this.matFactory.create({ color: 0x0f172a, roughness: 0.35, clearcoat: 0.5 });
 
-      const mirrorPane = new THREE.Mesh(new THREE.BoxGeometry(3.8, 4.8, 0.14, 16, 16, 4), mirrorGlassMat);
-      const frameBorder = new THREE.Mesh(new THREE.BoxGeometry(4.3, 5.3, 0.22, 16, 16, 4), frameMat);
+      const mirrorPane = new THREE.Mesh(this._createBeveledBoxGeometry(3.8, 4.8, 0.14, 0.035, 12), mirrorGlassMat);
+      const frameBorder = new THREE.Mesh(this._createBeveledBoxGeometry(4.3, 5.3, 0.22, 0.045, 12), frameMat);
       frameBorder.position.z = -0.06;
       macroGroup.add(frameBorder, mirrorPane);
       this.macroGroup.add(macroGroup);
 
       // STAGE 1 (Close-up): Optical Multilayer Cross-Section: Glass, SnCl2, Ag Film, Cu & Backing
       const closeupGroup = new THREE.Group();
-      const glassLayerMat = new THREE.MeshPhysicalMaterial({ color: 0xe0f2fe, transmission: 0.88, roughness: 0.03, clearcoat: 1.0 });
-      const sncl2Mat      = new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transmission: 0.6, transparent: true, opacity: 0.6 });
-      const silverLayerMat= new THREE.MeshPhysicalMaterial({ color: 0xf8fafc, metalness: 0.99, roughness: 0.02, clearcoat: 1.0 });
-      const cuPassivateMat= new THREE.MeshPhysicalMaterial({ color: 0xd97706, metalness: 0.95, roughness: 0.1 });
-      const backingMat    = new THREE.MeshPhysicalMaterial({ color: 0x334155, roughness: 0.4 });
+      const glassLayerMat = this.matFactory.create({ color: 0xe0f2fe, transmission: 0.88, roughness: 0.03, clearcoat: 1.0 });
+      const sncl2Mat      = this.matFactory.create({ color: 0x38bdf8, transmission: 0.6, transparent: true, opacity: 0.6 });
+      const silverLayerMat= this.matFactory.create({ color: 0xf8fafc, metalness: 0.99, roughness: 0.02, clearcoat: 1.0, normalType: 'micrograin', normalScale: 0.05 });
+      const cuPassivateMat= this.matFactory.create({ color: 0xd97706, metalness: 0.95, roughness: 0.1 });
+      const backingMat    = this.matFactory.create({ color: 0x334155, roughness: 0.4 });
 
-      // Layer 1: Float glass (front)
-      const lGlass = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.6, 0.70), glassLayerMat);
+      const lGlass = new THREE.Mesh(this._createBeveledBoxGeometry(3.6, 3.6, 0.70, 0.04, 10), glassLayerMat);
       lGlass.position.z = 0.50;
-      // Layer 2: SnCl2 sensitization interlayer
       const lSnCl2 = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.6, 0.04), sncl2Mat);
       lSnCl2.position.z = 0.13;
-      // Layer 3: Reflective Silver (Ag) thin film
       const lAg = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.6, 0.14), silverLayerMat);
       lAg.position.z = 0.04;
-      // Layer 4: Copper passivation barrier
       const lCu = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.6, 0.08), cuPassivateMat);
       lCu.position.z = -0.07;
-      // Layer 5: Protective backing paint
-      const lBack = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.6, 0.28), backingMat);
+      const lBack = new THREE.Mesh(this._createBeveledBoxGeometry(3.6, 3.6, 0.28, 0.03, 10), backingMat);
       lBack.position.z = -0.25;
 
       closeupGroup.add(lGlass, lSnCl2, lAg, lCu, lBack);
@@ -15009,20 +15396,17 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 2 (Micro): Atomically Smooth Glass-Silver Specular Reflection Interface
       const microGroup = new THREE.Group();
-      const microGlass = new THREE.Mesh(new THREE.BoxGeometry(4.0, 4.0, 0.6, 24, 24, 6), glassLayerMat);
+      const microGlass = new THREE.Mesh(this._createBeveledBoxGeometry(4.0, 4.0, 0.6, 0.03, 12), glassLayerMat);
       microGlass.position.z = 0.40;
-      const microAg = new THREE.Mesh(new THREE.BoxGeometry(4.0, 4.0, 0.18, 24, 24, 4), silverLayerMat);
+      const microAg = new THREE.Mesh(this._createBeveledBoxGeometry(4.0, 4.0, 0.18, 0.02, 10), silverLayerMat);
       microAg.position.z = 0.01;
       microGroup.add(microGlass, microAg);
 
-      // Specular incident / reflected photon light beam rays
       const beamMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 });
       [-1.0, 0.0, 1.0].forEach(bx => {
-        // Incident ray at 45 degrees
         const inRay = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.8, 16), beamMat);
         inRay.position.set(bx - 0.45, 0.45, 0.48);
         inRay.rotation.z = Math.PI / 4;
-        // Reflected ray at 45 degrees
         const refRay = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.8, 16), beamMat);
         refRay.position.set(bx + 0.45, 0.45, 0.48);
         refRay.rotation.z = -Math.PI / 4;
@@ -15032,19 +15416,19 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 3 (FE-SEM): Thornton Zone-T Columnar Polycrystalline Silver Grains
       const semGroup = new THREE.Group();
-      const grainMat = new THREE.MeshPhysicalMaterial({
+      const grainMat = this.matFactory.create({
         color: 0xe2e8f0,
         metalness: 0.98,
         roughness: 0.06,
-        clearcoat: 1.0
+        clearcoat: 1.0,
+        normalType: 'micrograin',
+        normalScale: 0.10
       });
-      // Hexagonal / faceted columnar crystals packed tightly together
       for (let x = -1.5; x <= 1.5; x += 0.52) {
         for (let z = -1.5; z <= 1.5; z += 0.52) {
           const colHeight = 1.4 + (Math.sin(x * 4 + z * 3) * 0.25);
           const colGrain = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.28, colHeight, 6, 8), grainMat);
           colGrain.position.set(x + (Math.sin(z) * 0.08), colHeight / 2 - 0.7, z);
-          // Faceted pyramidal top cap on grain
           const cap = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.18, 6), grainMat);
           cap.position.set(x + (Math.sin(z) * 0.08), colHeight - 0.7, z);
           semGroup.add(colGrain, cap);
@@ -15054,13 +15438,13 @@ function generateProceduralMolecularStructure(key, S) {
 
       // STAGE 4 (Nano): FCC Silver Twin Crystal Boundaries & Conduction Electron Fermi Sea
       const nanoGroup = new THREE.Group();
-      const twinPlaneMat = new THREE.MeshPhysicalMaterial({
+      const twinPlaneMat = this.matFactory.create({
         color: 0xf1f5f9,
         metalness: 0.99,
         roughness: 0.04,
         clearcoat: 1.0
       });
-      const plasmonSeaMat = new THREE.MeshPhysicalMaterial({
+      const plasmonSeaMat = this.matFactory.create({
         color: 0x93c5fd,
         transmission: 0.55,
         transparent: true,
@@ -15069,36 +15453,30 @@ function generateProceduralMolecularStructure(key, S) {
         clearcoat: 1.0
       });
 
-      // Coherent Sigma-3 (111) twin crystal boundary slab
       for (let y = -1.2; y <= 1.2; y += 0.48) {
         const slab = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.18, 3.6), twinPlaneMat);
         slab.position.set(0, y, 0);
         nanoGroup.add(slab);
       }
-      // Wave-like collective surface plasmon oscillation envelope
       const plasmonMesh = new THREE.Mesh(new THREE.BoxGeometry(3.8, 2.8, 3.8), plasmonSeaMat);
       nanoGroup.add(plasmonMesh);
       this.nanoGroup.add(nanoGroup);
 
       // STAGE 5 (Atomic): 3×3×3 Face-Centered Cubic (FCC) Silver (Ag) Metallic Lattice & Electron Sea
       const atomicGroup = new THREE.Group();
-      const agAtomMat = new THREE.MeshPhysicalMaterial({
+      const agAtomMat = this.matFactory.create({
         color: 0xf8fafc,
         metalness: 0.99,
         roughness: 0.04,
-        clearcoat: 1.0,
-        reflectivity: 1.0
+        clearcoat: 1.0
       });
 
-      // Generate a regular 3x3x3 FCC silver lattice unit cells
       const step = 0.95;
       const agPositions = [];
       for (let ix = -1; ix <= 1; ix++) {
         for (let iy = -1; iy <= 1; iy++) {
           for (let iz = -1; iz <= 1; iz++) {
-            // Corner atom of FCC cell
             agPositions.push(new THREE.Vector3(ix * step, iy * step, iz * step));
-            // Face-centered atoms (offset by half-step along 2 axes)
             if (ix < 1 && iy < 1) agPositions.push(new THREE.Vector3((ix + 0.5) * step, (iy + 0.5) * step, iz * step));
             if (ix < 1 && iz < 1) agPositions.push(new THREE.Vector3((ix + 0.5) * step, iy * step, (iz + 0.5) * step));
             if (iy < 1 && iz < 1) agPositions.push(new THREE.Vector3(ix * step, (iy + 0.5) * step, (iz + 0.5) * step));
@@ -15111,7 +15489,6 @@ function generateProceduralMolecularStructure(key, S) {
         agMesh.position.copy(pos);
         atomicGroup.add(agMesh);
 
-        // Connect nearest neighbors with metallic bonding conduction sea
         agPositions.forEach((otherPos, jdx) => {
           if (idx < jdx && pos.distanceTo(otherPos) < step * 0.78) {
             this._addMetallicBond(atomicGroup, pos, otherPos);
@@ -15136,8 +15513,8 @@ function generateProceduralMolecularStructure(key, S) {
 
       const halfDist = dist * 0.5;
       const cylGeom = new THREE.CylinderGeometry(0.08, 0.08, halfDist, SEG.cylRadialMed);
-      const matA = new THREE.MeshPhysicalMaterial({ color: colorA, roughness: 0.2, metalness: 0.2, clearcoat: 0.9 });
-      const matB = new THREE.MeshPhysicalMaterial({ color: colorB, roughness: 0.2, metalness: 0.2, clearcoat: 0.9 });
+      const matA = this.matFactory.create({ color: colorA, roughness: 0.2, metalness: 0.2, clearcoat: 0.9 });
+      const matB = this.matFactory.create({ color: colorB, roughness: 0.2, metalness: 0.2, clearcoat: 0.9 });
 
       const meshA = new THREE.Mesh(cylGeom, matA);
       meshA.position.copy(posA.clone().add(midPoint).multiplyScalar(0.5));
@@ -15151,7 +15528,7 @@ function generateProceduralMolecularStructure(key, S) {
 
       // Shared Molecular Orbital Electron Cloud
       const cloudGeom = new THREE.CylinderGeometry(0.14, 0.14, dist * 0.88, SEG.cylRadialMed);
-      const cloudMat = new THREE.MeshPhysicalMaterial({
+      const cloudMat = this.matFactory.create({
         color: 0x93c5fd,
         transparent: true,
         opacity: 0.32,
@@ -15234,9 +15611,8 @@ function generateProceduralMolecularStructure(key, S) {
       const yAxis = new THREE.Vector3(0, 1, 0);
       const quat = new THREE.Quaternion().setFromUnitVectors(yAxis, dir);
 
-      // Shimmering Conduction Electron Envelope
       const seaGeom = new THREE.CylinderGeometry(0.14, 0.14, dist * 0.92, SEG.cylRadialMed);
-      const seaMat = new THREE.MeshPhysicalMaterial({
+      const seaMat = this.matFactory.create({
         color: 0xf1f5f9,
         metalness: 0.98,
         roughness: 0.05,
@@ -15250,7 +15626,6 @@ function generateProceduralMolecularStructure(key, S) {
       sea.quaternion.copy(quat);
       parentGroup.add(sea);
 
-      // Mobile Conduction Electrons
       const eGeom = new THREE.SphereGeometry(0.04, 16, 12);
       const eMat = new THREE.MeshBasicMaterial({ color: 0x67e8f9 });
       [-0.2, 0, 0.2].forEach(offset => {
@@ -15260,7 +15635,7 @@ function generateProceduralMolecularStructure(key, S) {
       });
     }
 
-    _update(time) {
+    _update(timeSec) {
       // Continuous Logarithmic Zoom Glide (smooth lerp)
       this.zoomLog += (this.targetZoomLog - this.zoomLog) * 0.10;
 
@@ -15269,16 +15644,20 @@ function generateProceduralMolecularStructure(key, S) {
         this.rootGroup.rotation.y += 0.0035;
       }
 
+      // Atmospheric particle drift
+      if (this.particleSystem) {
+        this.particleSystem.rotation.y = timeSec * 0.02;
+        this.particleSystem.rotation.x = Math.sin(timeSec * 0.015) * 0.05;
+      }
+
       // Smooth Infinite Dive-In Camera Dolly & Group Cross-Fading
       const z = this.zoomLog;
 
-      // Cross-fade opacity between the 6 stages based on STAGE_CENTERS
       for (let s = 0; s < this.stageGroups.length; s++) {
         const group = this.stageGroups[s];
         const center = STAGE_CENTERS[s];
         const dist = Math.abs(z - center);
 
-        // Visibility window: full at center, fades out over distance of 1.4 log units
         let opacity = 0;
         if (dist < 1.4) {
           opacity = Math.max(0, 1 - Math.pow(dist / 1.4, 1.4));
@@ -15303,13 +15682,11 @@ function generateProceduralMolecularStructure(key, S) {
         }
       }
 
-      // Continuous Camera Dolly with cyclic nesting per stage (1.4 interval)
       const stageIdx = Math.min(4, Math.floor(z / 1.4));
       const localProgress = (z - (stageIdx * 1.4)) / 1.4;
       const cameraZ = 9.2 - (localProgress * 4.2);
       if (this.camera) this.camera.position.z = cameraZ;
 
-      // Subtle scale pulse for progressive magnification feel
       const scaleMag = 1.0 + (localProgress * 0.35);
       this.rootGroup.scale.set(scaleMag, scaleMag, scaleMag);
 
@@ -15393,6 +15770,7 @@ function generateProceduralMolecularStructure(key, S) {
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(width, height);
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      if (this.postProcessor) this.postProcessor.resize(width, height);
     }
 
     resetView() {
